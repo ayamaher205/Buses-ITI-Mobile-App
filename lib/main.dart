@@ -4,10 +4,16 @@ import 'package:bus_iti/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _MyApp();
+}
+class _MyApp extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,11 +33,11 @@ class MyApp extends StatelessWidget {
         future: determineInitialRoute(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator(); // Display a loading indicator while determining the initial route
+            return const CircularProgressIndicator();
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else {
-            return snapshot.data ?? LoginScreen(); // Display the determined initial route
+            return snapshot.data ?? const LoginScreen();
           }
         },
       ),
@@ -43,5 +49,5 @@ Future<Widget> determineInitialRoute() async {
   final prefs = await SharedPreferences.getInstance();
   final isLoggedIn = prefs.containsKey('email') && prefs.containsKey('password');
 
-  return isLoggedIn ? HomeScreen() : LoginScreen();
+  return isLoggedIn ? const HomeScreen() : const LoginScreen();
 }

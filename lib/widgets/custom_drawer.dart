@@ -1,70 +1,37 @@
-/*
-import 'package:flutter/material.dart';
-
-class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          UserAccountsDrawerHeader(
-            accountName:const Text('John Doe'),
-            accountEmail:const Text('john.doe@example.com'),
-            currentAccountPicture: const CircleAvatar(
-              backgroundImage: NetworkImage('https://images.playground.com/c55ac518d255402cbe46011116c9cd44.jpeg'),
-            ),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFD22525), Color(0xFFEB5757)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30.0),
-                bottomRight: Radius.circular(30.0),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10.0,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            onDetailsPressed: () {
-              // Handle details press (e.g., expand more details)
-              print('Details pressed');
-            },
-          ),
-          ListTile(
-            leading:const Icon(Icons.home),
-            title:const Text('Home'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading:const Icon(Icons.map),
-            title:const Text('Routes'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-*/
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:bus_iti/utils/auth.dart';
+import 'package:bus_iti/screens/login.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
+  @override
+  State<StatefulWidget> createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  late CheckAuth auth;
+  late Future<bool> isLoggedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    auth = CheckAuth();
+    auth.init().then((_) {
+      setState(() {
+        isLoggedIn = auth.isLoggedIn();
+      });
+    });
+  }
+
+  void logout() async {
+    await auth.clearCredentials();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,10 +105,12 @@ class CustomDrawer extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.exit_to_app, color: Colors.red),
+            leading: const Icon(Icons.exit_to_app, color: Color(0xFFD22525)),
             title: const Text('Logout'),
-            onTap: () {
-              print('logout');
+            onTap: () async {
+              if (await isLoggedIn) {
+                logout();
+              }
             },
           ),
           const SizedBox(height: 20.0),
