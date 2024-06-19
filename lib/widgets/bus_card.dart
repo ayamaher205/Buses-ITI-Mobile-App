@@ -40,14 +40,14 @@ class BusCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 8.0),
+                      SizedBox(height: 6.0),
                       Text(
                         'Start: 6:45 PM',
-                        style: TextStyle(fontSize: 16.0),
+                        style: TextStyle(fontSize: 15.0),
                       ),
                       Text(
                         'End: 6:45 PM',
-                        style: TextStyle(fontSize: 16.0),
+                        style: TextStyle(fontSize: 15.0),
                       ),
                     ],
                   ),
