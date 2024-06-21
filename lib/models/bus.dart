@@ -1,16 +1,12 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'bus_point.dart';
+import 'package:bus_iti/models/bus_point.dart';
 
-part 'bus.g.dart';
-
-@JsonSerializable()
 class Bus {
   final String id;
   final String name;
   final bool isActive;
   final int capacity;
   final List<BusPoint> busPoints;
-  final int v;
+  final int? version;
   final String? driverID;
 
   Bus({
@@ -19,10 +15,21 @@ class Bus {
     required this.isActive,
     required this.capacity,
     required this.busPoints,
-    required this.v,
+    this.version,
     this.driverID,
   });
 
-  factory Bus.fromJson(Map<String, dynamic> json) => _$BusFromJson(json);
-  Map<String, dynamic> toJson() => _$BusToJson(this);
+  factory Bus.fromJson(Map<String, dynamic> json) {
+    return Bus(
+      id: json['_id'] as String,
+      name: json['name'] as String,
+      isActive: json['isActive'] as bool,
+      capacity: json['capacity'] as int,
+      busPoints: (json['busPoints'] as List)
+          .map((point) => BusPoint.fromJson(point))
+          .toList(),
+      version: json['__v'] as int?,
+      driverID: json['driverID'] as String?,
+    );
+  }
 }

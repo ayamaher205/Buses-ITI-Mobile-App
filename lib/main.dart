@@ -4,7 +4,7 @@ import 'package:bus_iti/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-Future<void> main() async {
+Future main() async {
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
