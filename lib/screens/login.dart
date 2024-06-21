@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:bus_iti/screens/home.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bus_iti/services/user_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,19 +14,32 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+  bool _isLoading = false;
+  final UserAuth _userAuth = UserAuth();
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', _email);
-      await prefs.setString('password', _password);
-
-      print('Email: $_email, Password: $_password');
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      try {
+        final user = await _userAuth.login(_email, _password);
+        if (user != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -112,19 +125,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xA3DCDCDC),
-                    ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Color(0xFFD22525),
-                        fontSize: 20
-                      ),
-                    ),
-                  ),
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xA3DCDCDC),
+                          ),
+                          child: const Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Color(0xFFD22525),
+                              fontSize: 20
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
