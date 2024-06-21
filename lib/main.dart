@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:bus_iti/screens/home.dart';
 import 'package:bus_iti/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -11,9 +13,10 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MyApp();
+  State<StatefulWidget> createState() => _MyAppState();
 }
-class _MyApp extends State<MyApp> {
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,9 +36,9 @@ class _MyApp extends State<MyApp> {
         future: determineInitialRoute(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
+            return Center(child: Text('Error: ${snapshot.error}'));
           } else {
             return snapshot.data ?? const LoginScreen();
           }
@@ -47,7 +50,7 @@ class _MyApp extends State<MyApp> {
 
 Future<Widget> determineInitialRoute() async {
   final prefs = await SharedPreferences.getInstance();
-  final isLoggedIn = prefs.containsKey('email') && prefs.containsKey('password');
+  final isLoggedIn = prefs.containsKey('accessToken');
 
   return isLoggedIn ? const HomeScreen() : const LoginScreen();
 }

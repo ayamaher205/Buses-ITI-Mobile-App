@@ -1,10 +1,12 @@
-// user_auth.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bus_iti/models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserAuth {
-  static const String _loginUrl = 'https://iti-events-server.onrender.com/api/v1/auth/login';
+  static final String _baseUrl = dotenv.env['URL']!;
+  static final String _loginUrl = '$_baseUrl/auth/login';
 
   Future<User?> login(String email, String password) async {
     final response = await http.post(
@@ -18,7 +20,9 @@ class UserAuth {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      return User.fromJson(json);
+      final user = User.fromJson(json);
+      await _saveTokens(user);
+      return user;
     } else if (response.statusCode == 400) {
       throw Exception('Validation error');
     } else if (response.statusCode == 401) {
@@ -26,5 +30,17 @@ class UserAuth {
     } else {
       throw Exception('Failed to login');
     }
+  }
+
+  Future<void> _saveTokens(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('accessToken', user.accessToken);
+    await prefs.setString('refreshToken', user.refreshToken);
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
   }
 }
