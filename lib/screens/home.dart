@@ -10,7 +10,7 @@ class HomeScreen extends StatelessWidget {
     return const Scaffold(
       appBar: CustomAppBar(title: 'ITI'),
       drawer: CustomDrawer(),
-      body:BusCard(),
+      //body:BusCard(),
     );
 }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:bus_iti/screens/bus_line.dart';
 
 class BusCard extends StatelessWidget {
   final String title;
@@ -32,7 +31,7 @@ class BusCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child:  Image.network(
+                  child: Image.network(
                     imageUrl,
                     fit: BoxFit.cover,
                     height: 80,
@@ -68,12 +67,13 @@ class BusCard extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BusLine(),
-                        ),
-                      );
+                      print("ffffffffffff");
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const BusLine(),
+                      //   ),
+                      // );
                     },
                     style: ButtonStyle(
                       foregroundColor: WidgetStateProperty.all<Color>(
