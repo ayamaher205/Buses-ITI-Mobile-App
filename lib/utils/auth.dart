@@ -7,27 +7,26 @@ class CheckAuth {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  Future<void> setCredentials(String email, String password) async {
-    await _prefs.setString('email', email);
-    await _prefs.setString('password', password);
+  Future<void> setTokens(String accessToken, String refreshToken) async {
+    await _prefs.setString('accessToken', accessToken);
+    await _prefs.setString('refreshToken', refreshToken);
   }
 
-  Future<Map<String, String?>> getCredentials() async {
-    String? email = _prefs.getString('email');
-    String? password = _prefs.getString('password');
+  Future<Map<String, String?>> getTokens() async {
+    String? accessToken = _prefs.getString('accessToken');
+    String? refreshToken = _prefs.getString('refreshToken');
     return {
-      'email': email,
-      'password': password,
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
     };
   }
 
-  Future<void> clearCredentials() async {
-    await _prefs.remove('email');
-    await _prefs.remove('password');
+  Future<void> clearTokens() async {
+    await _prefs.remove('accessToken');
+    await _prefs.remove('refreshToken');
   }
   Future<bool> isLoggedIn() async {
-    String? email = _prefs.getString('email');
-    String? password = _prefs.getString('password');
-    return email != null && password != null;
+    String? accessToken = _prefs.getString('accessToken');
+    return accessToken != null;
   }
 }

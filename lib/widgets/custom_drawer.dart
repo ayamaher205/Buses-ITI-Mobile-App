@@ -26,7 +26,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   void logout() async {
-    await auth.clearCredentials();
+    await auth.clearTokens();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
