@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bus_iti/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class UserAuth {
   static final String _baseUrl = dotenv.env['URL']!;
@@ -42,5 +43,17 @@ class UserAuth {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');
     await prefs.remove('refreshToken');
+  }
+
+  Future<String?> getUserRoleFromToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+    
+    if (accessToken != null) {
+      final Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+      return decodedToken['role'];
+    }
+    
+    return null;
   }
 }
