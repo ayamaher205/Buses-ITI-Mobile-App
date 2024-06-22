@@ -1,74 +1,19 @@
-import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
+import 'package:bus_iti/models/bus_point.dart';
 
-class RouteDetailsScreen extends StatefulWidget {
-  const RouteDetailsScreen({super.key});
+class RouteDetailsScreen extends StatelessWidget {
+  final String driverName;
+  final String driverPhoneNumber;
+  final List<BusPoint> busPoints;
 
-  @override
-  State<RouteDetailsScreen> createState() => _RouteDetailsScreenState();
-}
-
-class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
-  String? _selectedPoint;
-
-  void _choosePoint() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Choose a Point'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                RadioListTile<String>(
-                  title: const Text('Stop 1'),
-                  value: 'Stop 1',
-                  groupValue: _selectedPoint,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPoint = value;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                RadioListTile<String>(
-                  title: const Text('Stop 2'),
-                  value: 'Stop 2',
-                  groupValue: _selectedPoint,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPoint = value;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-                RadioListTile<String>(
-                  title: const Text('Stop 3'),
-                  value: 'Stop 3',
-                  groupValue: _selectedPoint,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPoint = value;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  const RouteDetailsScreen({
+    super.key,
+    required this.driverName,
+    required this.driverPhoneNumber,
+    required this.busPoints,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +22,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       drawer: const CustomDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(5),
@@ -91,100 +38,61 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     ),
                   ),
                   const SizedBox(width: 14.0),
-                  const Expanded(
+                  Flexible(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 6.0),
                         Text(
-                          'Bus Code: 12',
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 6.0),
-                        Text(
-                          'Driver Name: Aya Maher',
-                          style: TextStyle(fontSize: 15.0),
+                          'Driver Name: $driverName',
+                          style: const TextStyle(fontSize: 15.0),
                         ),
                         Text(
-                          'Driver Number: 01234567890',
-                          style: TextStyle(fontSize: 15.0),
+                          'Driver Number: $driverPhoneNumber',
+                          style: const TextStyle(fontSize: 15.0),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20.0),
-            Expanded(
-              flex: 3,
-              child: ListView(
-                children: const [
-                  ListTile(
-                    leading: Icon(Icons.location_pin),
-                    title: Text('Stop 1'),
-                    trailing: Text('7:00 AM'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.location_pin),
-                    title: Text('Stop 2'),
-                    trailing: Text('7:15 AM'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.location_pin),
-                    title: Text('Stop 3'),
-                    trailing: Text('7:30 AM'),
-                  ),
-                ],
+              const SizedBox(height: 20.0),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: busPoints.length,
+                itemBuilder: (context, index) {
+                  final point = busPoints[index];
+                  return ListTile(
+                    leading: const Icon(Icons.location_pin),
+                    title: Text(point.name),
+                    trailing: Text(point.formattedPickupTime),
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: 10.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _choosePoint,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xA3DCDCDC),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                      vertical: 10.0,
-                    ),
-                  ),
-                  child: const Text(
-                    'Choose Point',
-                    style: TextStyle(
-                      color: Color(0xFFD22525),
-                      fontSize: 16,
-                    ),
+              const SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () {
+                  print('View in Map button pressed');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xA3DCDCDC),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15.0,
+                    vertical: 10.0,
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    print('View in Map button pressed');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xA3DCDCDC),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                      vertical: 10.0,
-                    ),
-                  ),
-                  child: const Text(
-                    'View in Map',
-                    style: TextStyle(
-                      color: Color(0xFFD22525),
-                      fontSize: 16,
-                    ),
+                child: const Text(
+                  'View in Map',
+                  style: TextStyle(
+                    color: Color(0xFFD22525),
+                    fontSize: 16,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20.0),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

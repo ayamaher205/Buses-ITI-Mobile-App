@@ -26,7 +26,7 @@ class UserAuth {
     } else if (response.statusCode == 400) {
       throw Exception('Validation error');
     } else if (response.statusCode == 401) {
-      throw Exception('Invalid credentials');
+      throw Exception('Invalid email or password');
     } else {
       throw Exception('Failed to login');
     }

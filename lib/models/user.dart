@@ -7,7 +7,10 @@ class User {
   final String accessToken;
   final String refreshToken;
 
-  User({required this.accessToken, required this.refreshToken});
+  User({
+    required this.accessToken,
+    required this.refreshToken
+  });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);

@@ -1,11 +1,15 @@
-import 'package:bus_iti/screens/route_details.dart';
 import 'package:flutter/material.dart';
+import 'package:bus_iti/screens/route_details.dart';
+import 'package:bus_iti/models/bus_point.dart';
 
 class BusCard extends StatelessWidget {
   final String title;
   final String start;
   final String end;
   final String imageUrl;
+  final String driverName;
+  final String driverPhoneNumber;
+  final List<BusPoint> busPoints;
 
   const BusCard({
     super.key,
@@ -13,6 +17,9 @@ class BusCard extends StatelessWidget {
     required this.start,
     required this.end,
     required this.imageUrl,
+    required this.driverName,
+    required this.driverPhoneNumber,
+    required this.busPoints,
   });
 
   @override
@@ -107,11 +114,16 @@ class BusCard extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const RouteDetailsScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RouteDetailsScreen(
+                            driverName: driverName,
+                            driverPhoneNumber: driverPhoneNumber,
+                            busPoints: busPoints,
+                          ),
+                        ),
+                      );
                     },
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all<Color>(
