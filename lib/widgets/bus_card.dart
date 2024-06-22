@@ -78,7 +78,7 @@ class BusCard extends StatelessWidget {
                               ),
                             ),
                             TextSpan(
-                              text: '$start AM',
+                              text: start,
                               style: const TextStyle(
                                 fontSize: 15.0,
                                 color: Color(0xFF646262),
@@ -98,7 +98,7 @@ class BusCard extends StatelessWidget {
                               ),
                             ),
                             TextSpan(
-                              text: '$end PM',
+                              text: end,
                               style: const TextStyle(
                                 fontSize: 15.0,
                                 color: Color(0xFF646262),
@@ -126,16 +126,16 @@ class BusCard extends StatelessWidget {
                       );
                     },
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all<Color>(
+                      foregroundColor: WidgetStateProperty.all<Color>(
                         const Color(0xFFD22525),
                       ),
-                      textStyle: MaterialStateProperty.all<TextStyle>(
+                      textStyle: WidgetStateProperty.all<TextStyle>(
                         const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      shape: MaterialStateProperty.all<OutlinedBorder>(
+                      shape: WidgetStateProperty.all<OutlinedBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),

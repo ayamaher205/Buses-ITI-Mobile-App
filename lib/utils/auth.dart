@@ -25,8 +25,18 @@ class CheckAuth {
     await _prefs.remove('accessToken');
     await _prefs.remove('refreshToken');
   }
+
   Future<bool> isLoggedIn() async {
     String? accessToken = _prefs.getString('accessToken');
     return accessToken != null;
+  }
+
+  Future<void> setRole(String role) async {
+    await _prefs.setString('role', role);
+  }
+
+  Future<bool> isAdmin() async {
+    String? role = _prefs.getString('role');
+    return role == 'admin';
   }
 }
