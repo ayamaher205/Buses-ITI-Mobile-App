@@ -28,6 +28,7 @@ class BusPoint {
     );
   }
 
-  String get formattedPickupTime => DateFormat.jm().format(pickupTime);
-  String get formattedDepartureTime => DateFormat.jm().format(departureTime);
+  String get formattedPickupTime => DateFormat('hh:mm a').format(pickupTime);
+  String get formattedDepartureTime => DateFormat('hh:mm a').format(departureTime);
+
 }

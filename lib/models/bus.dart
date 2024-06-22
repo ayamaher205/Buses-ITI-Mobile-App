@@ -38,4 +38,8 @@ class Bus {
       imageUrl: json['imageUrl'] as String?,
     );
   }
+
+/*  List<Map<String, dynamic>> get formattedBusPoints {
+    return busPoints.map((point) => point.toJson()).toList();
+  }*/
 }
