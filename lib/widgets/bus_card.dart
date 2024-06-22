@@ -1,3 +1,4 @@
+import 'package:bus_iti/screens/route_details.dart';
 import 'package:flutter/material.dart';
 
 class BusCard extends StatelessWidget {
@@ -31,14 +32,21 @@ class BusCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    height: 80,
-                    width: 80,
-                  ),
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          height: 80,
+                          width: 80,
+                        )
+                      : Image.asset(
+                          'images/default_bus_image.jpg',
+                          fit: BoxFit.cover,
+                          height: 80,
+                          width: 80,
+                        ),
                 ),
-                const SizedBox(width: 14.0),
+                const SizedBox(width: 10.0),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,14 +59,46 @@ class BusCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 6.0),
-                      Text(
-                        'Morning: $start AM',
-                        style: const TextStyle(fontSize: 15.0),
+                      const SizedBox(height: 4.0),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Morning: ',
+                              style: TextStyle(
+                                fontSize: 15.0,
+                                color: Color(0xFF000000),
+                              ),
+                            ),
+                            TextSpan(
+                              text: '$start AM',
+                              style: const TextStyle(
+                                fontSize: 15.0,
+                                color: Color(0xFF646262),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(
-                        'Departure: $end PM',
-                        style: const TextStyle(fontSize: 15.0),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Departure: ',
+                              style: TextStyle(
+                                fontSize: 15.0,
+                                color: Color(0xFF000000),
+                              ),
+                            ),
+                            TextSpan(
+                              text: '$end PM',
+                              style: const TextStyle(
+                                fontSize: 15.0,
+                                color: Color(0xFF646262),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -67,25 +107,23 @@ class BusCard extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: TextButton(
                     onPressed: () {
-                      print("ffffffffffff");
-                      // Navigator.pushReplacement(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const BusLine(),
-                      //   ),
-                      // );
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const RouteDetailsScreen()));
                     },
                     style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all<Color>(
+                      foregroundColor: MaterialStateProperty.all<Color>(
                         const Color(0xFFD22525),
                       ),
-                      textStyle: WidgetStateProperty.all<TextStyle>(
+                      textStyle: MaterialStateProperty.all<TextStyle>(
                         const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      shape: WidgetStateProperty.all<OutlinedBorder>(
+                      shape: MaterialStateProperty.all<OutlinedBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),

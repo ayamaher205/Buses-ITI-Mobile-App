@@ -1,3 +1,4 @@
+import 'package:bus_iti/models/driver.dart';
 import 'package:bus_iti/models/bus_point.dart';
 
 class Bus {
@@ -7,7 +8,8 @@ class Bus {
   final int capacity;
   final List<BusPoint> busPoints;
   final int? version;
-  final String? driverID;
+  final Driver? driver;
+  final String? imageUrl;
 
   Bus({
     required this.id,
@@ -16,7 +18,8 @@ class Bus {
     required this.capacity,
     required this.busPoints,
     this.version,
-    this.driverID,
+    this.driver,
+    this.imageUrl,
   });
 
   factory Bus.fromJson(Map<String, dynamic> json) {
@@ -29,7 +32,10 @@ class Bus {
           .map((point) => BusPoint.fromJson(point))
           .toList(),
       version: json['__v'] as int?,
-      driverID: json['driverID'] as String?,
+      driver: json['driverID'] != null
+          ? Driver.fromJson(json['driverID'])
+          : null,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 }

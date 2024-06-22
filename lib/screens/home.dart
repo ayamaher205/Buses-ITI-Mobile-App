@@ -32,6 +32,7 @@ class _HomeScreen extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+            print(snapshot.error);
             return const Center(child: Text('Error: Failed to load data'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No buses available'));
@@ -49,7 +50,7 @@ class _HomeScreen extends State<HomeScreen> {
                   end: bus.busPoints.isNotEmpty
                       ? bus.busPoints.last.departureTime.toString()
                       : 'Not determined',
-                  imageUrl: 'https://www.allstarvip.com/wp-content/uploads/2020/11/chartered-bus-sightseeing-tour.jpg',
+                  imageUrl: bus.imageUrl ?? '',
                 );
               },
             );

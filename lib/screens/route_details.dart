@@ -84,8 +84,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(5),
-                    child: Image.network(
-                      'https://www.allstarvip.com/wp-content/uploads/2020/11/chartered-bus-sightseeing-tour.jpg',
+                    child: Image.asset(
+                      'images/default_bus_image.jpg',
                       width: 100,
                       fit: BoxFit.cover,
                     ),
