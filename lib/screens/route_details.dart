@@ -2,18 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
 import 'package:bus_iti/models/bus_point.dart';
+import 'package:bus_iti/services/user_auth.dart';
+import 'package:bus_iti/screens/update_driver.dart';
+import 'package:bus_iti/utils/app_styles.dart';
 
-class RouteDetailsScreen extends StatelessWidget {
+class RouteDetailsScreen extends StatefulWidget {
+  final String driverId;
   final String driverName;
   final String driverPhoneNumber;
   final List<BusPoint> busPoints;
 
   const RouteDetailsScreen({
     super.key,
+    required this.driverId,
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
   });
+
+  @override
+  State<RouteDetailsScreen> createState() => _RouteDetailsScreenState();
+}
+
+class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
+  bool _isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfAdmin();
+  }
+
+  Future<void> _checkIfAdmin() async {
+    final role = await UserAuth().getUserRoleFromToken();
+    setState(() {
+      _isAdmin = role == 'admin';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +70,11 @@ class RouteDetailsScreen extends StatelessWidget {
                       children: [
                         const SizedBox(height: 6.0),
                         Text(
-                          'Driver Name: $driverName',
+                          'Driver Name: ${widget.driverName}',
                           style: const TextStyle(fontSize: 15.0),
                         ),
                         Text(
-                          'Driver Number: $driverPhoneNumber',
+                          'Driver Number: ${widget.driverPhoneNumber}',
                           style: const TextStyle(fontSize: 15.0),
                         ),
                       ],
@@ -61,9 +86,9 @@ class RouteDetailsScreen extends StatelessWidget {
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: busPoints.length,
+                itemCount: widget.busPoints.length,
                 itemBuilder: (context, index) {
-                  final point = busPoints[index];
+                  final point = widget.busPoints[index];
                   return ListTile(
                     leading: const Icon(Icons.location_pin),
                     title: Text(point.name),
@@ -76,21 +101,38 @@ class RouteDetailsScreen extends StatelessWidget {
                 onPressed: () {
                   print('View in Map button pressed');
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xA3DCDCDC),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15.0,
-                    vertical: 10.0,
-                  ),
+                style: AppStyles.elevatedButtonStyle.copyWith(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color?>(Colors.transparent),
                 ),
                 child: const Text(
                   'View in Map',
-                  style: TextStyle(
-                    color: Color(0xFFD22525),
-                    fontSize: 16,
-                  ),
+                  style: AppStyles.buttonTextStyle,
                 ),
               ),
+              if (_isAdmin)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UpdateDriverScreen(
+                          driverId: widget.driverId,
+                          driverName: widget.driverName,
+                          driverPhoneNumber: widget.driverPhoneNumber,
+                        ),
+                      ),
+                    );
+                  },
+                  style: AppStyles.elevatedButtonStyle.copyWith(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color?>(Colors.transparent),
+                  ),
+                  child: const Text(
+                    'Update Driver Details',
+                    style: AppStyles.buttonTextStyle,
+                  ),
+                ),
             ],
           ),
         ),
