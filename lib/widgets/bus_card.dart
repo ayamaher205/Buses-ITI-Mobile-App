@@ -7,6 +7,7 @@ class BusCard extends StatelessWidget {
   final String start;
   final String end;
   final String imageUrl;
+  final String driverId;
   final String driverName;
   final String driverPhoneNumber;
   final List<BusPoint> busPoints;
@@ -17,6 +18,7 @@ class BusCard extends StatelessWidget {
     required this.start,
     required this.end,
     required this.imageUrl,
+    required this.driverId,
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
@@ -118,6 +120,7 @@ class BusCard extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => RouteDetailsScreen(
+                            driverId: driverId,
                             driverName: driverName,
                             driverPhoneNumber: driverPhoneNumber,
                             busPoints: busPoints,

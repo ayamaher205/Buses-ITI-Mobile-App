@@ -84,6 +84,7 @@ class _HomeScreen extends State<HomeScreen> {
                       ? bus.busPoints.last.formattedDepartureTime
                       : 'Not determined',
                   imageUrl: bus.imageUrl ?? '',
+                  driverId: bus.driver?.id ?? '',
                   driverName: bus.driver?.name ?? 'Not determined',
                   driverPhoneNumber: bus.driver?.phoneNumber ?? 'Not determined',
                   busPoints: bus.busPoints,
