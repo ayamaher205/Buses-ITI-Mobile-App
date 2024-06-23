@@ -1,21 +1,21 @@
 // home_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
-import '../widgets/bus_form.dart';
 import 'package:bus_iti/widgets/bus_card.dart';
-import 'package:bus_iti/services/bus.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
 import 'package:bus_iti/models/bus.dart';
 import 'package:bus_iti/services/bus.dart';
 import 'package:bus_iti/utils/auth.dart';
+import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
+
+import '../widgets/bus_form.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreen createState() => _HomeScreen();
 }
 
 class _HomeScreen extends State<HomeScreen> {
@@ -37,11 +37,9 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   void _addBus(String name, int capacity, bool isActive, String? imagePath, List<Map<String, dynamic>> points, String driver) {
-    // Add logic to handle the bus data (e.g., sending it to a server, updating local state, etc.)
-    // For example, you could call a method on your Bus service to save the new bus:
     //BusLines().addBus(name, capacity, isActive, imagePath, points, driver);
     setState(() {
-      buses = BusLines().getBuses();
+      buses = BusLines().getBuses(); // Refresh the list of buses
     });
   }
 
@@ -61,20 +59,22 @@ class _HomeScreen extends State<HomeScreen> {
       appBar: const CustomAppBar(title: 'ITI'),
       drawer: const CustomDrawer(),
       body: FutureBuilder<List<Bus>>(
-        future: futureBuses,
+        future: buses,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+            print(snapshot.error);
             return const Center(child: Text('Error: Failed to load data'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No buses available'));
           } else {
+            List<Bus> buses = snapshot.data!;
             return ListView.builder(
               controller: _scrollController,
               itemCount: buses.length,
               itemBuilder: (context, index) {
-                final bus = snapshot.data![index];
+                Bus bus = buses[index];
                 return BusCard(
                   title: bus.name,
                   start: bus.busPoints.isNotEmpty
@@ -93,34 +93,27 @@ class _HomeScreen extends State<HomeScreen> {
           }
         },
       ),
-        floatingActionButton:/* FutureBuilder<bool>(
+      floatingActionButton: FutureBuilder<bool>(
         future: isAdmin,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container();
+            return const SizedBox();
           } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!) {
-            return Container();
+            return const SizedBox();
           } else {
-            return FloatingActionButton(
-              onPressed: () => showDialog(
-                context: context,
-                builder: (BuildContext context) => CreateBus(),
-              ),
-              child: const Icon(Icons.add),
+            return ScrollingFabAnimated(
+              icon: const Icon(Icons.add, color: Colors.white),
+              text: const Text('Add', style: TextStyle(color: Colors.white, fontSize: 20.0)),
+              color: const Color(0xFF850606),
+              onPress: () => _navigateToAddBusForm(context),
+              scrollController: _scrollController,
+              animateIcon: true,
+              inverted: false,
+              radius: 10.0,
             );
           }
         },
-      ),*/
-        ScrollingFabAnimated(
-          icon: const Icon(Icons.add, color: Colors.white,),
-          text: const Text('Add', style: TextStyle(color: Colors.white, fontSize: 20.0),),
-          color: const Color(0xFF850606),
-          onPress: () => _navigateToAddBusForm(context),
-          scrollController: _scrollController,
-          animateIcon: true,
-          inverted: false,
-          radius: 10.0,
-        )
+      ),
     );
   }
 }
