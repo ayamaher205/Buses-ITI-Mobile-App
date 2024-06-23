@@ -1,14 +1,12 @@
-// home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:bus_iti/widgets/bus_card.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
 import 'package:bus_iti/models/bus.dart';
 import 'package:bus_iti/services/bus.dart';
-import 'package:bus_iti/utils/auth.dart';
 import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
 
+import '../services/user_auth.dart';
 import '../widgets/bus_form.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,13 +25,12 @@ class _HomeScreen extends State<HomeScreen> {
   void initState() {
     super.initState();
     buses = BusLines().getBuses();
-    isAdmin = _initializeAdminCheck();
+    isAdmin = _checkIfAdmin();
   }
 
-  Future<bool> _initializeAdminCheck() async {
-    CheckAuth auth = CheckAuth();
-    await auth.init();
-    return auth.isAdmin();
+  Future<bool> _checkIfAdmin() async {
+    final role = await UserAuth().getUserRoleFromToken();
+    return role == 'admin';
   }
 
   void _addBus(String name, int capacity, bool isActive, String? imagePath, List<Map<String, dynamic>> points, String driver) {
@@ -98,9 +95,9 @@ class _HomeScreen extends State<HomeScreen> {
         future: isAdmin,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox();
+            return const SizedBox(); // Or a placeholder
           } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!) {
-            return const SizedBox();
+            return const SizedBox(); // Hide FAB if not admin or error occurred
           } else {
             return ScrollingFabAnimated(
               icon: const Icon(Icons.add, color: Colors.white),

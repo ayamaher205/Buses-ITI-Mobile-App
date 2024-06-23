@@ -1,3 +1,4 @@
+import 'package:bus_iti/screens/bus_line.dart';
 import 'package:flutter/material.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
@@ -99,7 +100,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
               const SizedBox(height: 20.0),
               ElevatedButton(
                 onPressed: () {
-                  print('View in Map button pressed');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BusLine(points: widget.busPoints),
+                    ),
+                  );
                 },
                 style: AppStyles.elevatedButtonStyle.copyWith(
                   backgroundColor:

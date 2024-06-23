@@ -4,9 +4,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../models/bus_point.dart';
 
 class BusLine extends StatefulWidget {
-  const BusLine({super.key});
+  final List<BusPoint> points; // List of points with latitude and longitude
+
+  const BusLine({super.key, required this.points});
 
   @override
   _BusLine createState() => _BusLine();
@@ -14,7 +17,7 @@ class BusLine extends StatefulWidget {
 
 class _BusLine extends State<BusLine> {
   late IO.Socket socket;
-  LatLng currentLocation = LatLng(0, 0); // Default value
+  LatLng currentLocation = LatLng(0, 0);
   bool locationInitialized = false;
 
   void initSocket() {
@@ -65,8 +68,8 @@ class _BusLine extends State<BusLine> {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) return;
 
-    final locationSettings =
-    LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 100);
+    final locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high, distanceFilter: 100);
     StreamSubscription<Position> positionStream =
     Geolocator.getPositionStream(locationSettings: locationSettings)
         .listen((Position position) {
@@ -107,11 +110,24 @@ class _BusLine extends State<BusLine> {
                   height: 80.0,
                   point: currentLocation,
                   child: const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
+                    Icons.person_pin_circle,
+                    color: Colors.blue,
                     size: 40.0,
                   ),
                 ),
+                // Markers for each point in the list
+                ...widget.points.map((point) {
+                  return Marker(
+                    width: 80.0,
+                    height: 80.0,
+                    point: LatLng(point.latitude, point.longitude),
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 40.0,
+                    ),
+                  );
+                }).toList(),
               ],
             ),
           ],
