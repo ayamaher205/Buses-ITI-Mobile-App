@@ -6,6 +6,7 @@ import 'package:bus_iti/screens/login.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
+
   @override
   State<StatefulWidget> createState() => _CustomDrawerState();
 }
@@ -44,9 +45,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 height: 196.0,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(
-                        'https://images.playground.com/c55ac518d255402cbe46011116c9cd44.jpeg'),
-                    fit: BoxFit.cover,
+                    image: AssetImage('images/iti-logo.png'),
+                    fit: BoxFit.contain,
                   ),
                 ),
                 child: BackdropFilter(
@@ -56,19 +56,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   ),
                 ),
               ),
-              UserAccountsDrawerHeader(
-                accountName: const Text('username'),
-                accountEmail: const Text('userEmail@example.com'),
-                currentAccountPicture: const CircleAvatar(
-                  backgroundImage: NetworkImage(
-                      'https://images.playground.com/c55ac518d255402cbe46011116c9cd44.jpeg'),
+              const Positioned(
+                bottom: 10,
+                left: 10,
+                child: Text(
+                  'Information Technology Institute',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                decoration: const BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                onDetailsPressed: () {
-                  print('view Profile');
-                },
               ),
             ],
           ),
@@ -85,8 +83,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.map),
-                  title: const Text('Routes'),
+                  leading: const Icon(Icons.person),
+                  title: const Text('Profile'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
                   onTap: () {
                     Navigator.pop(context);

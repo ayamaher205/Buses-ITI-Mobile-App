@@ -53,7 +53,7 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'ITI'),
+      appBar: const CustomAppBar(title: 'Routes'),
       drawer: const CustomDrawer(),
       body: FutureBuilder<List<Bus>>(
         future: buses,
@@ -61,7 +61,6 @@ class _HomeScreen extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            print(snapshot.error);
             return const Center(child: Text('Error: Failed to load data'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No buses available'));
