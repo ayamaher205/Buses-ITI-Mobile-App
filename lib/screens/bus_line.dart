@@ -41,24 +41,19 @@ class _BusLine extends State<BusLine> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location services are disabled. Please enable the services')));
+      _showLocationDisabledDialog();
       return false;
     }
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')));
+        _showPermissionDeniedDialog();
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.')));
+      _showPermissionDeniedDialog();
       return false;
     }
     return true;
@@ -69,10 +64,12 @@ class _BusLine extends State<BusLine> {
     if (!hasPermission) return;
 
     final locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high, distanceFilter: 100);
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
     StreamSubscription<Position> positionStream =
-    Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
         locationInitialized = true;
@@ -84,53 +81,118 @@ class _BusLine extends State<BusLine> {
     });
   }
 
+  void _showLocationDisabledDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          true, // Allows dialog to be dismissed by tapping outside
+      builder: (context) {
+        return AlertDialog(
+          title:const Text('Location Services Disabled'),
+          content:const Text(
+            'Location services are disabled. Please enable the services.',
+            style: TextStyle(
+              fontSize: 16.0,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop(); // Navigate back
+              },
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: Color(0xFF850606),
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          ],
+        );
+      },
+    ).then((_) {
+      Navigator.of(context).pop(); // Navigate back when dialog is dismissed
+    });
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          true, // Allows dialog to be dismissed by tapping outside
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Location Permission Denied'),
+          content: const Text(
+            'Please go to settings and enable location permissions for this app.',
+            style: TextStyle(),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      Navigator.of(context).pop();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Bus Line'),
-        ),
-        body: !locationInitialized
-            ? const Center(child: CircularProgressIndicator())
-            : FlutterMap(
-          options: MapOptions(
-            initialCenter: currentLocation,
-            initialZoom: 15.0,
-          ),
-          children: [
-            TileLayer(
-              urlTemplate:
-              "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b', 'c'],
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
-                  width: 80.0,
-                  height: 80.0,
-                  point: currentLocation,
-                  child: const Icon(
-                    Icons.person_pin_circle,
-                    color: Colors.blue,
-                    size: 40.0,
-                  ),
+      appBar: AppBar(
+        title: const Text('Bus Line'),
+      ),
+      body: !locationInitialized
+          ? const Center(child: CircularProgressIndicator())
+          : FlutterMap(
+              options: MapOptions(
+                initialCenter: currentLocation,
+                initialZoom: 15.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: const ['a', 'b', 'c'],
                 ),
-                // Markers for each point in the list
-                ...widget.points.map((point) {
-                  return Marker(
-                    width: 80.0,
-                    height: 80.0,
-                    point: LatLng(point.latitude, point.longitude),
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.red,
-                      size: 40.0,
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      width: 80.0,
+                      height: 80.0,
+                      point: currentLocation,
+                      child: const Icon(
+                        Icons.person_pin_circle,
+                        color: Colors.blue,
+                        size: 40.0,
+                      ),
                     ),
-                  );
-                }).toList(),
+                    ...widget.points.map((point) {
+                      return Marker(
+                        width: 80.0,
+                        height: 80.0,
+                        point: LatLng(point.latitude, point.longitude),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40.0,
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ],
             ),
-          ],
-        ));
+    );
   }
 }

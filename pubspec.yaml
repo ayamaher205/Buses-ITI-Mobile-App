@@ -49,6 +49,9 @@ dependencies:
   gsform: ^0.3.6
   bottom_sheet_expandable_bar: ^0.1.2
   jwt_decoder: ^2.0.1
+  firebase_core: ^3.1.0
+  firebase_messaging: ^15.0.1
+  image_picker: ^0.8.9
 
 dev_dependencies:
   flutter_test:

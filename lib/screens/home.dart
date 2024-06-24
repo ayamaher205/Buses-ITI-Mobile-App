@@ -5,7 +5,6 @@ import 'package:bus_iti/widgets/custom_appBar.dart';
 import 'package:bus_iti/models/bus.dart';
 import 'package:bus_iti/services/bus.dart';
 import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
-
 import '../services/user_auth.dart';
 import '../widgets/bus_form.dart';
 
@@ -33,10 +32,10 @@ class _HomeScreen extends State<HomeScreen> {
     return role == 'admin';
   }
 
-  void _addBus(String name, int capacity, bool isActive, String? imagePath, List<Map<String, dynamic>> points, String driver) {
-    //BusLines().addBus(name, capacity, isActive, imagePath, points, driver);
+  void _addBus(String name, int capacity, bool isActive, String? imagePath, List<Map<String, dynamic>> points, String departureTime, String arrivalTime) async {
+    await BusLines().createBus(name, capacity, isActive, imagePath, points, departureTime, arrivalTime);
     setState(() {
-      buses = BusLines().getBuses(); // Refresh the list of buses
+      buses = BusLines().getBuses();
     });
   }
 
@@ -61,6 +60,7 @@ class _HomeScreen extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
+            print(snapshot.error);
             return const Center(child: Text('Error: Failed to load data'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No buses available'));
@@ -73,11 +73,11 @@ class _HomeScreen extends State<HomeScreen> {
                 Bus bus = buses[index];
                 return BusCard(
                   title: bus.name,
-                  start: bus.busPoints.isNotEmpty
-                      ? bus.busPoints.first.formattedPickupTime
+                  start: bus.formattedArrivalTime.isNotEmpty
+                      ? bus.formattedArrivalTime
                       : 'Not determined',
-                  end: bus.busPoints.isNotEmpty
-                      ? bus.busPoints.last.formattedDepartureTime
+                  end: bus.formattedDepartureTime.isNotEmpty
+                      ? bus.formattedDepartureTime
                       : 'Not determined',
                   imageUrl: bus.imageUrl ?? '',
                   driverId: bus.driver?.id ?? '',
@@ -94,9 +94,9 @@ class _HomeScreen extends State<HomeScreen> {
         future: isAdmin,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(); // Or a placeholder
+            return const SizedBox();
           } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!) {
-            return const SizedBox(); // Hide FAB if not admin or error occurred
+            return const SizedBox();
           } else {
             return ScrollingFabAnimated(
               icon: const Icon(Icons.add, color: Colors.white),
