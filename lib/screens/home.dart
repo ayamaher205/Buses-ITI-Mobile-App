@@ -32,8 +32,7 @@ class _HomeScreen extends State<HomeScreen> {
     return role == 'admin';
   }
 
-  void _addBus(String name, int capacity, bool isActive, String? imagePath, List<Map<String, dynamic>> points, String departureTime, String arrivalTime) async {
-    await BusLines().createBus(name, capacity, isActive, imagePath, points, departureTime, arrivalTime);
+  void _addBus()  {
     setState(() {
       buses = BusLines().getBuses();
     });
@@ -42,9 +41,7 @@ class _HomeScreen extends State<HomeScreen> {
   void _navigateToAddBusForm(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => BusForm(
-          onSaved: _addBus,
-        ),
+        builder: (context) => BusForm(),
       ),
     );
   }

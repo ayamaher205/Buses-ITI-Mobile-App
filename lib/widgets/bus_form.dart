@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
-import 'package:latlong2/latlong.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 import '../screens/selection_point.dart';
+import '../services/bus.dart';
 
 class BusForm extends StatefulWidget {
-  final Function(String, int, bool, String?, List<Map<String, dynamic>>, String, String) onSaved;
-
-  const BusForm({super.key, required this.onSaved});
+  const BusForm({super.key});
 
   @override
   BusFormState createState() => BusFormState();
@@ -20,7 +20,11 @@ class BusFormState extends State<BusForm> {
   final _nameController = TextEditingController();
   final _capacityController = TextEditingController();
   final _departureTimeController = TextEditingController();
+  final _departureTimeIsoController =
+      TextEditingController(); // ISO format controller
   final _arrivalTimeController = TextEditingController();
+  final _arrivalTimeIsoController =
+      TextEditingController(); // ISO format controller
   final _imageController = TextEditingController();
   bool _isActive = true;
   File? _imageFile;
@@ -29,13 +33,16 @@ class BusFormState extends State<BusForm> {
   List<TextEditingController> _latControllers = [];
   List<TextEditingController> _longControllers = [];
   List<TextEditingController> _pickupTimeControllers = [];
+  List<TextEditingController> _pickupTimeIsoControllers = [];
 
   @override
   void dispose() {
     _nameController.dispose();
     _capacityController.dispose();
     _departureTimeController.dispose();
+    _departureTimeIsoController.dispose(); // Dispose ISO controller
     _arrivalTimeController.dispose();
+    _arrivalTimeIsoController.dispose(); // Dispose ISO controller
     for (var controller in _latControllers) {
       controller.dispose();
     }
@@ -46,25 +53,42 @@ class BusFormState extends State<BusForm> {
     for (var controller in _pickupTimeControllers) {
       controller.dispose();
     }
+    for (var controller in _pickupTimeIsoControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _selectTime(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectTime(
+      BuildContext context,
+      TextEditingController displayController,
+      TextEditingController isoController,
+      {int? index}) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
     if (picked != null) {
+      final now = DateTime.now();
+      final selectedTime =
+          DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+      final isoFormattedTime = selectedTime.toUtc().toIso8601String();
+
+      final formattedTime = DateFormat('h:mm a').format(selectedTime);
+
       setState(() {
-        final now = DateTime.now();
-        final time = DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
-        controller.text = DateFormat.Hm().format(time);
+        displayController.text = formattedTime;
+        isoController.text = isoFormattedTime;
+        if (index != null) {
+          _points[index]['pickupTime'] = isoFormattedTime;
+        }
       });
     }
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -73,12 +97,31 @@ class BusFormState extends State<BusForm> {
     }
   }
 
-  String _formatTimeToIso8601(String time) {
-    final DateFormat inputFormat = DateFormat.Hm();
-    final DateTime dateTime = inputFormat.parse(time);
-    final now = DateTime.now();
-    final DateTime fullDateTime = DateTime(now.year, now.month, now.day, dateTime.hour, dateTime.minute);
-    return fullDateTime.toIso8601String();
+  Future<void> _showDialog(BuildContext context, bool isSuccess) async {
+    AwesomeDialog(
+      context: context,
+      animType: AnimType.leftSlide,
+      headerAnimationLoop: false,
+      dialogType: isSuccess ? DialogType.success : DialogType.error,
+      showCloseIcon: true,
+      title: isSuccess ? 'Success' : 'Failure',
+      desc: isSuccess
+          ? 'Bus Created successfully.'
+          : 'Bus creation failed. Please try again.',
+      btnOkOnPress: () {
+        if (isSuccess) {
+          Navigator.of(context).pop();
+        }
+      },
+      btnOkColor: isSuccess ? const Color(0xFF13DC2E) :
+      const Color(0xDFD22525),
+      // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
+      onDismissCallback: (type) {
+        if (isSuccess) {
+          Navigator.of(context).pop();
+        }
+      },
+    ).show();
   }
 
   @override
@@ -156,21 +199,6 @@ class BusFormState extends State<BusForm> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _departureTimeController,
-                decoration: const InputDecoration(
-                  labelText: 'Departure Time',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.departure_board),
-                  floatingLabelStyle: TextStyle(color: Color(0xFF9f9e9e)),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF9f9e9e)),
-                  ),
-                ),
-                readOnly: true,
-                onTap: () => _selectTime(context, _departureTimeController),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
                 controller: _arrivalTimeController,
                 decoration: const InputDecoration(
                   labelText: 'Arrival Time',
@@ -182,7 +210,24 @@ class BusFormState extends State<BusForm> {
                   ),
                 ),
                 readOnly: true,
-                onTap: () => _selectTime(context, _arrivalTimeController),
+                onTap: () => _selectTime(
+                    context, _arrivalTimeController, _arrivalTimeIsoController),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _departureTimeController,
+                decoration: const InputDecoration(
+                  labelText: 'Departure Time',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.departure_board),
+                  floatingLabelStyle: TextStyle(color: Color(0xFF9f9e9e)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF9f9e9e)),
+                  ),
+                ),
+                readOnly: true,
+                onTap: () => _selectTime(context, _departureTimeController,
+                    _departureTimeIsoController),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -199,10 +244,22 @@ class BusFormState extends State<BusForm> {
                 onChanged: (value) {
                   setState(() {
                     _numPoints = int.tryParse(value) ?? 0;
-                    _points = List.generate(_numPoints, (index) => {'name': '', 'lat': 0.0, 'long': 0.0, 'pickupTime': ''});
-                    _latControllers = List.generate(_numPoints, (index) => TextEditingController());
-                    _longControllers = List.generate(_numPoints, (index) => TextEditingController());
-                    _pickupTimeControllers = List.generate(_numPoints, (index) => TextEditingController());
+                    _points = List.generate(
+                        _numPoints,
+                        (index) => {
+                              'name': '',
+                              'latitude': 0.0,
+                              'longitude': 0.0,
+                              'pickupTime': '',
+                            });
+                    _latControllers = List.generate(
+                        _numPoints, (index) => TextEditingController());
+                    _longControllers = List.generate(
+                        _numPoints, (index) => TextEditingController());
+                    _pickupTimeControllers = List.generate(
+                        _numPoints, (index) => TextEditingController());
+                    _pickupTimeIsoControllers = List.generate(
+                        _numPoints, (index) => TextEditingController());
                   });
                 },
               ),
@@ -215,7 +272,8 @@ class BusFormState extends State<BusForm> {
                         labelText: 'Point ${i + 1} Name',
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.place),
-                        floatingLabelStyle: const TextStyle(color: Color(0xFF9f9e9e)),
+                        floatingLabelStyle:
+                            const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
@@ -233,13 +291,16 @@ class BusFormState extends State<BusForm> {
                             decoration: const InputDecoration(
                               labelText: 'Latitude',
                               border: OutlineInputBorder(),
-                              floatingLabelStyle: TextStyle(color: Color(0xFF9f9e9e)),
+                              floatingLabelStyle:
+                                  TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Color(0xFF9f9e9e)),
+                                borderSide:
+                                    BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
                             onChanged: (value) {
-                              _points[i]['lat'] = double.tryParse(value) ?? 0.0;
+                              _points[i]['latitude'] =
+                                  double.tryParse(value) ?? 0.0;
                             },
                           ),
                         ),
@@ -250,13 +311,16 @@ class BusFormState extends State<BusForm> {
                             decoration: const InputDecoration(
                               labelText: 'Longitude',
                               border: OutlineInputBorder(),
-                              floatingLabelStyle: TextStyle(color: Color(0xFF9f9e9e)),
+                              floatingLabelStyle:
+                                  TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Color(0xFF9f9e9e)),
+                                borderSide:
+                                    BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
                             onChanged: (value) {
-                              _points[i]['long'] = double.tryParse(value) ?? 0.0;
+                              _points[i]['longitude'] =
+                                  double.tryParse(value) ?? 0.0;
                             },
                           ),
                         ),
@@ -267,17 +331,22 @@ class BusFormState extends State<BusForm> {
                             child: Image.asset('images/map_icon.png'),
                           ),
                           onPressed: () async {
-                            LatLng? selectedPoint = await Navigator.of(context).push(
+                            LatLng? selectedPoint =
+                                await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => const MapSelectionScreen(),
+                                builder: (context) =>
+                                    const MapSelectionScreen(),
                               ),
                             );
                             if (selectedPoint != null) {
                               setState(() {
-                                _points[i]['lat'] = selectedPoint.latitude;
-                                _points[i]['long'] = selectedPoint.longitude;
-                                _latControllers[i].text = selectedPoint.latitude.toString();
-                                _longControllers[i].text = selectedPoint.longitude.toString();
+                                _points[i]['latitude'] = selectedPoint.latitude;
+                                _points[i]['longitude'] =
+                                    selectedPoint.longitude;
+                                _latControllers[i].text =
+                                    selectedPoint.latitude.toString();
+                                _longControllers[i].text =
+                                    selectedPoint.longitude.toString();
                               });
                             }
                           },
@@ -291,45 +360,59 @@ class BusFormState extends State<BusForm> {
                         labelText: 'Pickup Time for Point ${i + 1}',
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.access_time),
-                        floatingLabelStyle: const TextStyle(color: Color(0xFF9f9e9e)),
+                        floatingLabelStyle:
+                            const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
                       ),
                       readOnly: true,
-                      onTap: () => _selectTime(context, _pickupTimeControllers[i]),
-                      onChanged: (value) {
-                        _points[i]['pickupTime'] = value;
-                      },
+                      onTap: () => _selectTime(
+                          context,
+                          _pickupTimeControllers[i],
+                          _pickupTimeIsoControllers[i],
+                          index: i),
                     ),
                     const SizedBox(height: 16),
                   ],
                 ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    final departureTimeIso = _formatTimeToIso8601(_departureTimeController.text);
-                    final arrivalTimeIso = _formatTimeToIso8601(_arrivalTimeController.text);
-                    for (int i = 0; i < _points.length; i++) {
-                      if (_pickupTimeControllers[i].text.isNotEmpty) {
-                        _points[i]['pickupTime'] = _formatTimeToIso8601(_pickupTimeControllers[i].text);
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        try {
+                          await BusLines().createBus(
+                              _nameController.text,
+                              int.parse(_capacityController.text),
+                              _isActive,
+                              _imageFile?.path,
+                              _points,
+                              _departureTimeIsoController.text,
+                              _arrivalTimeIsoController.text);
+                          _showDialog(context, true);
+                        } catch (e) {
+                          _showDialog(context, false);
+                        }
                       }
-                    }
-                    widget.onSaved(
-                      _nameController.text,
-                      int.parse(_capacityController.text),
-                      _isActive,
-                      _imageFile?.path,
-                      _points,
-                      departureTimeIso,
-                      arrivalTimeIso,
-                    );
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: const Text('Save'),
-              ),
+                    },
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(fontSize: 20, color: Color(0xFF13DC2E)),
+                    ),
+                  ),
+                  const SizedBox(width: 30.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      _formKey.currentState!.reset();
+                    },
+                    child: const Text('Reset',
+                        style:
+                            TextStyle(fontSize: 20, color: Color(0xFFD22525))),
+                  )
+                ],
+              )
             ],
           ),
         ),

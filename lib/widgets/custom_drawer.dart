@@ -45,7 +45,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 height: 196.0,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('images/iti-logo.png'),
+                    image: AssetImage('images/new-capital.jpeg'),
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -62,7 +62,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 child: Text(
                   'Information Technology Institute',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.white,//Color(0xFFD22525),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
