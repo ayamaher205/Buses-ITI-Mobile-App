@@ -26,4 +26,6 @@ class BusPoint {
   }
 
   String get formattedPickupTime => DateFormat('hh:mm a').format(pickupTime);
+
+  get departureTime => null;
 }

@@ -81,6 +81,47 @@ class BusLines {
       }
     } catch (e) {
       rethrow;
+    }}
+
+  Future<void> subscribeToBus(String busLineId) async {
+    var url = Uri.parse('${dotenv.env['URL']!}buses/users/');
+    CheckAuth checkAuth = CheckAuth();
+    await checkAuth.init();
+    Map<String, String?> tokens = await checkAuth.getTokens();
+    String accessToken = tokens['accessToken']!;
+    
+    var response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: json.encode({'busLineId': busLineId}),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to subscribe to bus');
+    }
+  }
+
+  Future<void> unsubscribeFromBus(String busLineId) async {
+    var url = Uri.parse('${dotenv.env['URL']!}buses/users/');
+    CheckAuth checkAuth = CheckAuth();
+    await checkAuth.init();
+    Map<String, String?> tokens = await checkAuth.getTokens();
+    String accessToken = tokens['accessToken']!;
+    
+    var response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: json.encode({'busLineId': busLineId}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to unsubscribe from bus');
     }
   }
 }

@@ -12,12 +12,13 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  _HomeScreen createState() => _HomeScreen();
+  State<HomeScreen> createState() => _HomeScreen();
 }
 
 class _HomeScreen extends State<HomeScreen> {
   late Future<List<Bus>> buses;
   late Future<bool> isAdmin;
+  late Future<String> userId;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -25,11 +26,16 @@ class _HomeScreen extends State<HomeScreen> {
     super.initState();
     buses = BusLines().getBuses();
     isAdmin = _checkIfAdmin();
+    userId = _getUserId();
   }
 
   Future<bool> _checkIfAdmin() async {
     final role = await UserAuth().getUserRoleFromToken();
     return role == 'admin';
+  }
+
+  Future<String> _getUserId() async {
+    return await UserAuth().getUserIdFromToken();
   }
 
   void _addBus()  {
@@ -57,31 +63,46 @@ class _HomeScreen extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            print(snapshot.error);
             return const Center(child: Text('Error: Failed to load data'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No buses available'));
           } else {
-            List<Bus> buses = snapshot.data!;
-            return ListView.builder(
-              controller: _scrollController,
-              itemCount: buses.length,
-              itemBuilder: (context, index) {
-                Bus bus = buses[index];
-                return BusCard(
-                  title: bus.name,
-                  start: bus.formattedArrivalTime.isNotEmpty
-                      ? bus.formattedArrivalTime
-                      : 'Not determined',
-                  end: bus.formattedDepartureTime.isNotEmpty
-                      ? bus.formattedDepartureTime
-                      : 'Not determined',
-                  imageUrl: bus.imageUrl ?? '',
-                  driverId: bus.driver?.id ?? '',
-                  driverName: bus.driver?.name ?? 'Not determined',
-                  driverPhoneNumber: bus.driver?.phoneNumber ?? 'Not determined',
-                  busPoints: bus.busPoints,
-                );
+            return FutureBuilder<String>(
+              future: userId,
+              builder: (context, userIdSnapshot) {
+                if (userIdSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (userIdSnapshot.hasError) {
+                  return const Center(child: Text('Error: Failed to load user data'));
+                } else if (!userIdSnapshot.hasData) {
+                  return const Center(child: Text('No user data available'));
+                } else {
+                  String userId = userIdSnapshot.data!;
+                  List<Bus> buses = snapshot.data!;
+                  return ListView.builder(
+                    controller: _scrollController,
+                    itemCount: buses.length,
+                    itemBuilder: (context, index) {
+                      Bus bus = buses[index];
+                      return BusCard(
+                        userId: userId,
+                        title: bus.name,
+                        start: bus.formattedArrivalTime.isNotEmpty
+                            ? bus.formattedArrivalTime
+                            : 'Not determined',
+                        end: bus.formattedDepartureTime.isNotEmpty
+                            ? bus.formattedDepartureTime
+                            : 'Not determined',
+                        imageUrl: bus.imageUrl ?? '',
+                        busId: bus.id,
+                        driverId: bus.driver?.id ?? '',
+                        driverName: bus.driver?.name ?? 'Not determined',
+                        driverPhoneNumber: bus.driver?.phoneNumber ?? 'Not determined',
+                        busPoints: bus.busPoints,
+                      );
+                    },
+                  );
+                }
               },
             );
           }
