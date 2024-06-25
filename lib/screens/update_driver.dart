@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:bus_iti/services/driver.dart';
 import 'package:bus_iti/utils/app_styles.dart';
+import 'package:bus_iti/models/driver.dart';
 
 class UpdateDriverScreen extends StatefulWidget {
   final String driverId;
   final String driverName;
   final String driverPhoneNumber;
+  final Function(String, String) onUpdate;
 
   const UpdateDriverScreen({
     super.key,
     required this.driverId,
     required this.driverName,
     required this.driverPhoneNumber,
+    required this.onUpdate,
   });
 
   @override
@@ -20,15 +23,30 @@ class UpdateDriverScreen extends StatefulWidget {
 
 class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
   final _formKey = GlobalKey<FormState>();
-  late String _driverName;
   late String _driverPhoneNumber;
-  final DriverInfo _driverInfo = DriverInfo();
+  late String _selectedDriverId;
+  List<Driver> _drivers = [];
+  final DriverService _driverService = DriverService();
 
   @override
   void initState() {
     super.initState();
-    _driverName = widget.driverName;
     _driverPhoneNumber = widget.driverPhoneNumber;
+    _selectedDriverId = widget.driverId;
+    _loadDrivers();
+  }
+
+  Future<void> _loadDrivers() async {
+    try {
+      final drivers = await _driverService.getAllDrivers();
+      setState(() {
+        _drivers = drivers;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load drivers: $e')),
+      );
+    }
   }
 
   void _updateDriver() async {
@@ -36,12 +54,19 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
       _formKey.currentState!.save();
 
       try {
-        await _driverInfo.updateDriver(
-          driverId: widget.driverId,
-          name: _driverName,
+        final updatedDriver = await _driverService.updateDriver(
+          driverId: _selectedDriverId,
+          name: _drivers.firstWhere((driver) => driver.id == _selectedDriverId).name,
           phoneNumber: _driverPhoneNumber,
         );
-        Navigator.of(context).pop();
+
+        widget.onUpdate(updatedDriver.name, _driverPhoneNumber);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Driver details updated successfully')),
+        );
+
+        Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString())),
@@ -50,11 +75,24 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
     }
   }
 
+  String? _validatePhoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter the driver phone number';
+    }
+    String pattern = r'^01[0-2]{1}[0-9]{8}$';
+    RegExp regex = RegExp(pattern);
+    if (!regex.hasMatch(value)) {
+      return 'Please enter a valid Egyptian phone number';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Update Driver Details'),
+        title: const Text('Update Bus Details'),
+        titleTextStyle: AppStyles.appBarTitleStyle,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -64,21 +102,22 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextFormField(
-                  initialValue: _driverName,
+                DropdownButtonFormField<String>(
+                  value: _selectedDriverId,
+                  items: _drivers.map((driver) {
+                    return DropdownMenuItem<String>(
+                      value: driver.id,
+                      child: Text(driver.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedDriverId = value!;
+                    });
+                  },
                   decoration: AppStyles.inputDecoration.copyWith(
-                    labelText: 'Driver Name',
+                    labelText: 'Select Driver',
                   ),
-                  style: const TextStyle(color: Colors.black),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the driver name';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _driverName = value!;
-                  },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -87,12 +126,7 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
                     labelText: 'Driver Phone Number',
                   ),
                   style: const TextStyle(color: Colors.black),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the driver phone number';
-                    }
-                    return null;
-                  },
+                  validator: _validatePhoneNumber,
                   onSaved: (value) {
                     _driverPhoneNumber = value!;
                   },
@@ -100,13 +134,8 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _updateDriver,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: const Color(0xFFD22525),
-                    backgroundColor: const Color(0xA3DCDCDC),
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    textStyle: const TextStyle(fontSize: 20),
-                  ),
-                  child: const Text('Update Driver Details'),
+                  style: AppStyles.elevatedButtonStyle,
+                  child: const Text('Update', style: AppStyles.buttonTextStyle),
                 ),
               ],
             ),

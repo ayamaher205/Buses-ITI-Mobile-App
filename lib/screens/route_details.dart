@@ -13,11 +13,11 @@ class RouteDetailsScreen extends StatefulWidget {
   final String userId;
   final String busId;
   final String driverId;
-  final String driverName;
-  final String driverPhoneNumber;
+  String driverName;
+  String driverPhoneNumber;
   final List<BusPoint> busPoints;
 
-  const RouteDetailsScreen({
+  RouteDetailsScreen({
     super.key,
     required this.userId,
     required this.busId,
@@ -44,6 +44,13 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     final role = await UserAuth().getUserRoleFromToken();
     setState(() {
       _isAdmin = role == 'admin';
+    });
+  }
+
+  void _updateDriverDetails(String name, String phoneNumber) {
+    setState(() {
+      widget.driverName = name;
+      widget.driverPhoneNumber = phoneNumber;
     });
   }
 
@@ -131,9 +138,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     ),
                   );
                 },
-                style: AppStyles.elevatedButtonStyle.copyWith(
-                  backgroundColor: MaterialStateProperty.all<Color?>(Colors.transparent),
-                ),
+                style: AppStyles.elevatedButtonStyle,
                 child: const Text(
                   'View in Map',
                   style: AppStyles.buttonTextStyle,
@@ -149,13 +154,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                           driverId: widget.driverId,
                           driverName: widget.driverName,
                           driverPhoneNumber: widget.driverPhoneNumber,
+                          onUpdate: _updateDriverDetails,
                         ),
                       ),
                     );
                   },
-                  style: AppStyles.elevatedButtonStyle.copyWith(
-                    backgroundColor: MaterialStateProperty.all<Color?>(Colors.transparent),
-                  ),
+                  style: AppStyles.elevatedButtonStyle,
                   child: const Text(
                     'Update Driver Details',
                     style: AppStyles.buttonTextStyle,
