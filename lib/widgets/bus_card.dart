@@ -3,10 +3,12 @@ import 'package:bus_iti/screens/route_details.dart';
 import 'package:bus_iti/models/bus_point.dart';
 
 class BusCard extends StatelessWidget {
+  final String userId;
   final String title;
   final String start;
   final String end;
   final String imageUrl;
+  final String busId;
   final String driverId;
   final String driverName;
   final String driverPhoneNumber;
@@ -14,10 +16,12 @@ class BusCard extends StatelessWidget {
 
   const BusCard({
     super.key,
+    required this.userId,
     required this.title,
     required this.start,
     required this.end,
     required this.imageUrl,
+    required this.busId,
     required this.driverId,
     required this.driverName,
     required this.driverPhoneNumber,
@@ -120,6 +124,8 @@ class BusCard extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => RouteDetailsScreen(
+                            userId: userId,
+                            busId: busId,
                             driverId: driverId,
                             driverName: driverName,
                             driverPhoneNumber: driverPhoneNumber,
@@ -129,16 +135,16 @@ class BusCard extends StatelessWidget {
                       );
                     },
                     style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all<Color>(
+                      foregroundColor: MaterialStateProperty.all<Color>(
                         const Color(0xFFD22525),
                       ),
-                      textStyle: WidgetStateProperty.all<TextStyle>(
+                      textStyle: MaterialStateProperty.all<TextStyle>(
                         const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      shape: WidgetStateProperty.all<OutlinedBorder>(
+                      shape: MaterialStateProperty.all<OutlinedBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),

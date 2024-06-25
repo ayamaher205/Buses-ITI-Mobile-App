@@ -1,13 +1,17 @@
 import 'package:bus_iti/screens/bus_line.dart';
+import 'package:bus_iti/services/user_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
 import 'package:bus_iti/models/bus_point.dart';
-import 'package:bus_iti/services/user_auth.dart';
 import 'package:bus_iti/screens/update_driver.dart';
 import 'package:bus_iti/utils/app_styles.dart';
+import 'package:bus_iti/utils/subscription_state.dart';
 
 class RouteDetailsScreen extends StatefulWidget {
+  final String userId;
+  final String busId;
   final String driverId;
   final String driverName;
   final String driverPhoneNumber;
@@ -15,6 +19,8 @@ class RouteDetailsScreen extends StatefulWidget {
 
   const RouteDetailsScreen({
     super.key,
+    required this.userId,
+    required this.busId,
     required this.driverId,
     required this.driverName,
     required this.driverPhoneNumber,
@@ -43,6 +49,9 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final subscriptionState = Provider.of<SubscriptionState>(context);
+    bool isSubscribed = subscriptionState.isSubscribed(widget.userId, widget.busId);
+
     return Scaffold(
       appBar: const CustomAppBar(title: 'ITI'),
       drawer: const CustomDrawer(),
@@ -98,6 +107,21 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 },
               ),
               const SizedBox(height: 20.0),
+              SwitchListTile(
+                title: Text(
+                  isSubscribed ? 'Unsubscribe to this bus' : 'Subscribe to this bus',
+                ),
+                value: isSubscribed,
+                activeColor: Colors.green,
+                onChanged: (value) {
+                  if (value) {
+                    subscriptionState.subscribe(widget.userId, widget.busId);
+                  } else {
+                    subscriptionState.unsubscribe(widget.userId, widget.busId);
+                  }
+                  setState(() {});
+                },
+              ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -108,8 +132,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                   );
                 },
                 style: AppStyles.elevatedButtonStyle.copyWith(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color?>(Colors.transparent),
+                  backgroundColor: MaterialStateProperty.all<Color?>(Colors.transparent),
                 ),
                 child: const Text(
                   'View in Map',
@@ -131,8 +154,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     );
                   },
                   style: AppStyles.elevatedButtonStyle.copyWith(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color?>(Colors.transparent),
+                    backgroundColor: MaterialStateProperty.all<Color?>(Colors.transparent),
                   ),
                   child: const Text(
                     'Update Driver Details',

@@ -56,4 +56,16 @@ class UserAuth {
     
     return null;
   }
+
+  Future<String> getUserIdFromToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+    
+    if (accessToken != null) {
+      final Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+      return decodedToken['id'] ?? '';
+    }
+    
+    throw Exception('Token not found');
+  }
 }
