@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bus_iti/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:bus_iti/utils/auth.dart';
@@ -82,14 +83,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.pop(context);
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.person),
-                  title: const Text('Profile'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
+               ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('Profile'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                  );
+                },
+              ),
                 ListTile(
                   leading: const Icon(Icons.info_rounded),
                   title: const Text('About'),
