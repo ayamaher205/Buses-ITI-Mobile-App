@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
-import 'package:awesome_dialog/awesome_dialog.dart';
+zimport 'package:awesome_dialog/awesome_dialog.dart';
 
 import '../screens/selection_point.dart';
 import '../services/bus.dart';

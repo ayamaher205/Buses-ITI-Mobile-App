@@ -9,7 +9,7 @@ class UserAuth {
   static final String _baseUrl = dotenv.env['URL']!;
   static final String _loginUrl = '$_baseUrl/auth/login';
 
-  Future<User?> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
       Uri.parse(_loginUrl),
       headers: {'Content-Type': 'application/json'},
@@ -23,13 +23,13 @@ class UserAuth {
       final json = jsonDecode(response.body);
       final user = User.fromJson(json);
       await _saveTokens(user);
-      return user;
+      return {'user': user};
     } else if (response.statusCode == 400) {
-      throw Exception('Validation error');
+      return {'error': 'Validation error'};
     } else if (response.statusCode == 401) {
-      throw Exception('Invalid email or password');
+      return {'error': 'Invalid email or password'};
     } else {
-      throw Exception('Failed to login');
+      return {'error': 'Failed to login'};
     }
   }
 
