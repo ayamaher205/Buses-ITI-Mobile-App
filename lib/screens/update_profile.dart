@@ -19,7 +19,7 @@ class UpdateProfileScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _UpdateProfileScreenState createState() => _UpdateProfileScreenState();
+  State<UpdateProfileScreen> createState() => _UpdateProfileScreenState();
 }
 
 class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
@@ -28,6 +28,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -42,10 +43,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   }
 
   Future<void> _updateUserProfile() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -57,18 +55,25 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       return;
     }
 
+    final updateData = {
+      'firstName': _firstNameController.text,
+      'lastName': _lastNameController.text,
+    };
+
+    if (_passwordController.text.isNotEmpty) {
+      updateData['password'] = _passwordController.text;
+    }
+
     final response = await http.patch(
       Uri.parse('${dotenv.env['URL']!}/users/me'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
       },
-      body: json.encode({
-        'firstName': _firstNameController.text,
-        'lastName': _lastNameController.text,
-        'password': _passwordController.text.isNotEmpty ? _passwordController.text : null,
-      }),
+      body: json.encode(updateData),
     );
+
+    print('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,6 +99,13 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     super.dispose();
   }
 
+  String? _validatePassword(String? value) {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,37 +120,54 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _firstNameController,
-              decoration: InputDecoration(labelText: 'First Name'),
-            ),
-            TextField(
-              controller: _lastNameController,
-              decoration: InputDecoration(labelText: 'Last Name'),
-            ),
-            TextField(
-              controller: TextEditingController(text: widget.email),
-              decoration: InputDecoration(labelText: 'Email'),
-              enabled: false,
-            ),
-            TextField(
-              controller: TextEditingController(text: widget.role),
-              decoration: InputDecoration(labelText: 'Role'),
-              enabled: false,
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'New Password'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(labelText: 'Confirm New Password'),
-              obscureText: true,
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _firstNameController,
+                decoration: InputDecoration(labelText: 'First Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your first name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: InputDecoration(labelText: 'Last Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your last name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: TextEditingController(text: widget.email),
+                decoration: InputDecoration(labelText: 'Email'),
+                enabled: false,
+              ),
+              TextFormField(
+                controller: TextEditingController(text: widget.role),
+                decoration: InputDecoration(labelText: 'Role'),
+                enabled: false,
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'New Password'),
+                obscureText: true,
+                validator: _validatePassword,
+              ),
+              TextFormField(
+                controller: _confirmPasswordController,
+                decoration: InputDecoration(labelText: 'Confirm New Password'),
+                obscureText: true,
+                validator: _validatePassword,
+              ),
+            ],
+          ),
         ),
       ),
     );
