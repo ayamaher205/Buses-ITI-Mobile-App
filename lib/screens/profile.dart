@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
+
   @override
-  _UserProfileScreenState createState() => _UserProfileScreenState();
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+  late SharedPreferences prefs;
   String firstName = '';
   String lastName = '';
   String email = '';
   String role = '';
-  String imageUrl = '';
   bool isEditing = false;
 
   final TextEditingController _firstNameController = TextEditingController();
@@ -21,36 +24,80 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _roleController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _fetchUserProfile();
+    _initPrefsAndFetchUserProfile();
   }
 
-  Future<void> _fetchUserProfile() async {
-    final response =
-        await http.get(Uri.parse('${dotenv.env['URL']!}/users/me'));
-    
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        firstName = data['first_name'];
-        lastName = data['last_name'];
-        role = data['role'];
-        email = data['email'];
-        imageUrl = data['image_url'];
-      });
-      _firstNameController.text = firstName;
-      _lastNameController.text = lastName;
-      _emailController.text = email;
-      _roleController.text = role;
-    } else {
-      // Handle error
-      throw Exception('Failed to load profile');
+  Future<void> _initPrefsAndFetchUserProfile() async {
+    prefs = await SharedPreferences.getInstance();
+    await _fetchUserProfile();
+  }
+
+Future<void> _fetchUserProfile() async {
+  try {
+    final accessToken = prefs.getString('accessToken');
+    if (accessToken == null) {
+      throw Exception('No access token found');
     }
+
+    final response = await http.get(
+      Uri.parse('${dotenv.env['URL']!}/users/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final userData = json.decode(response.body)['user'];
+      if (mounted) {
+        setState(() {
+          firstName = userData['firstName'] ?? '';
+          lastName = userData['lastName'] ?? '';
+          email = userData['email'] ?? '';
+          role = userData['role'] ?? '';
+        });
+
+        _firstNameController.text = firstName;
+        _lastNameController.text = lastName;
+        _emailController.text = email;
+        _roleController.text = role;
+      }
+    } else {
+      final errorData = json.decode(response.body);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load profile: ${errorData['message']}')),
+        );
+      }
+    }
+  } catch (e) {
+    print('Error fetching user profile: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load profile: $e')),
+      );
+    }
+  }
+}
+
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _roleController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
   Future<void> _updateUserProfile() async {
@@ -61,15 +108,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return;
     }
 
+    final accessToken = prefs.getString('accessToken');
+    if (accessToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No access token found')),
+      );
+      return;
+    }
+
     final response = await http.patch(
       Uri.parse('${dotenv.env['URL']!}/users/me'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
       body: json.encode({
         'first_name': _firstNameController.text,
         'last_name': _lastNameController.text,
-        'password': _passwordController.text.isNotEmpty
-            ? _passwordController.text
-            : _passwordController.text,
+        'password': _passwordController.text.isNotEmpty ? _passwordController.text : null,
       }),
     );
 
@@ -93,7 +149,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: Text('User Profile'),
         actions: [
           IconButton(
             icon: Icon(isEditing ? Icons.save : Icons.edit),
@@ -110,19 +166,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ],
       ),
       body: Padding(
+        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            imageUrl.isNotEmpty
-                ? CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(imageUrl),
-                  )
-                : CircleAvatar(
-                    radius: 50,
-                    child: Icon(Icons.person),
-                  ),
-            SizedBox(height: 16),
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage('https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_640.png'),
+            ),
+            SizedBox(height: 20),
             TextField(
               controller: _firstNameController,
               decoration: InputDecoration(labelText: 'First Name'),
@@ -136,12 +188,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             TextField(
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
-              enabled: !isEditing,
+              enabled: false,
             ),
             TextField(
               controller: _roleController,
               decoration: InputDecoration(labelText: 'Role'),
-              enabled: !isEditing,
+              enabled: false,
             ),
             if (isEditing) ...[
               TextField(
@@ -151,16 +203,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
               TextField(
                 controller: _confirmPasswordController,
-                decoration:
-                    InputDecoration(labelText: 'Confirm New Password'),
+                decoration: InputDecoration(labelText: 'Confirm New Password'),
                 obscureText: true,
               ),
             ],
             SizedBox(height: 16),
-            Text(
-              role,
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+        
           ],
         ),
       ),
