@@ -41,14 +41,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  awesome_dialog:
-    dependency: "direct main"
-    description:
-      name: awesome_dialog
-      sha256: "41c41ae4b30b5c7f26bb3d9f9c87010ed1cab0bb4d4ac0cc513e5799c37e9d82"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -391,7 +383,7 @@ packages:
     source: hosted
     version: "0.1.5"
   flutter_svg:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_svg
       sha256: "7b4ca6cf3304575fe9c8ec64813c8d02ee41d2afe60bcfe0678bcb5375d596a2"
@@ -920,22 +912,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  rive:
-    dependency: transitive
-    description:
-      name: rive
-      sha256: "0342c9cd3c83ceeee4ad9246b98d628a2e9abd9d615acf69fa81fbbcf84a36ae"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.13.8"
-  rive_common:
-    dependency: transitive
-    description:
-      name: rive_common
-      sha256: "3fe76ba4680787741688ee393e47b63417e8643816795e4eac01021683af1d84"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.9"
   shared_preferences:
     dependency: "direct main"
     description:

@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
-import 'package:awesome_dialog/awesome_dialog.dart';
+// import 'package:awesome_dialog/awesome_dialog.dart';
 
 import '../screens/selection_point.dart';
 import '../services/bus.dart';
@@ -97,32 +97,32 @@ class BusFormState extends State<BusForm> {
     }
   }
 
-  Future<void> _showDialog(BuildContext context, bool isSuccess) async {
-    AwesomeDialog(
-      context: context,
-      animType: AnimType.leftSlide,
-      headerAnimationLoop: false,
-      dialogType: isSuccess ? DialogType.success : DialogType.error,
-      showCloseIcon: true,
-      title: isSuccess ? 'Success' : 'Failure',
-      desc: isSuccess
-          ? 'Bus Created successfully.'
-          : 'Bus creation failed. Please try again.',
-      btnOkOnPress: () {
-        if (isSuccess) {
-          Navigator.of(context).pop();
-        }
-      },
-      btnOkColor: isSuccess ? const Color(0xFF13DC2E) :
-      const Color(0xDFD22525),
-      // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
-      onDismissCallback: (type) {
-        if (isSuccess) {
-          Navigator.of(context).pop();
-        }
-      },
-    ).show();
-  }
+  // Future<void> _showDialog(BuildContext context, bool isSuccess) async {
+  //   AwesomeDialog(
+  //     context: context,
+  //     animType: AnimType.leftSlide,
+  //     headerAnimationLoop: false,
+  //     dialogType: isSuccess ? DialogType.success : DialogType.error,
+  //     showCloseIcon: true,
+  //     title: isSuccess ? 'Success' : 'Failure',
+  //     desc: isSuccess
+  //         ? 'Bus Created successfully.'
+  //         : 'Bus creation failed. Please try again.',
+  //     btnOkOnPress: () {
+  //       if (isSuccess) {
+  //         Navigator.of(context).pop();
+  //       }
+  //     },
+  //     btnOkColor: isSuccess ? const Color(0xFF13DC2E) :
+  //     const Color(0xDFD22525),
+  //     // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
+  //     onDismissCallback: (type) {
+  //       if (isSuccess) {
+  //         Navigator.of(context).pop();
+  //       }
+  //     },
+  //   ).show();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -391,9 +391,9 @@ class BusFormState extends State<BusForm> {
                               _points,
                               _departureTimeIsoController.text,
                               _arrivalTimeIsoController.text);
-                          _showDialog(context, true);
+                          // _showDialog(context, true);
                         } catch (e) {
-                          _showDialog(context, false);
+                          // _showDialog(context, false);
                         }
                       }
                     },

@@ -53,7 +53,8 @@ dependencies:
   firebase_messaging: ^15.0.1
   image_picker: ^0.8.9
   provider: ^6.1.2
-  awesome_dialog: ^3.2.1
+  flutter_svg: ^2.0.10+1
+  # awesome_dialog: ^3.2.1
 
 dev_dependencies:
   flutter_test:
