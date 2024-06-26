@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bus_iti/screens/home.dart';
 import 'package:bus_iti/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
@@ -47,11 +48,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 decoration: const BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage('images/new-capital.jpeg'),
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
                   ),
                 ),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                  filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
                   child: Container(
                     color: Colors.black.withOpacity(0.2),
                   ),
@@ -80,7 +81,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   title: const Text('Home'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.push(context,MaterialPageRoute(builder: (context) => const HomeScreen()));
                   },
                 ),
                ListTile(
@@ -90,7 +91,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => UserProfileScreen()),
+                    MaterialPageRoute(builder: (context) => const UserProfileScreen()),
                   );
                 },
               ),

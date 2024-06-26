@@ -13,6 +13,7 @@ class BusCard extends StatelessWidget {
   final String driverName;
   final String driverPhoneNumber;
   final List<BusPoint> busPoints;
+  final bool isActive;
 
   const BusCard({
     super.key,
@@ -26,6 +27,7 @@ class BusCard extends StatelessWidget {
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
+    required this.isActive, // Add the isActive parameter
   });
 
   @override
@@ -47,17 +49,17 @@ class BusCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(5),
                   child: imageUrl.isNotEmpty
                       ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          height: 80,
-                          width: 80,
-                        )
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    height: 80,
+                    width: 80,
+                  )
                       : Image.asset(
-                          'images/default_bus_image.jpg',
-                          fit: BoxFit.cover,
-                          height: 80,
-                          width: 80,
-                        ),
+                    'images/default_bus_image.jpg',
+                    fit: BoxFit.cover,
+                    height: 80,
+                    width: 80,
+                  ),
                 ),
                 const SizedBox(width: 10.0),
                 Expanded(
@@ -77,7 +79,7 @@ class BusCard extends StatelessWidget {
                         text: TextSpan(
                           children: [
                             const TextSpan(
-                              text: 'Morning: ',
+                              text: 'Arrival Time: ',
                               style: TextStyle(
                                 fontSize: 15.0,
                                 color: Color(0xFF000000),
@@ -97,7 +99,7 @@ class BusCard extends StatelessWidget {
                         text: TextSpan(
                           children: [
                             const TextSpan(
-                              text: 'Departure: ',
+                              text: 'Departure Time: ',
                               style: TextStyle(
                                 fontSize: 15.0,
                                 color: Color(0xFF000000),
@@ -126,25 +128,27 @@ class BusCard extends StatelessWidget {
                           builder: (context) => RouteDetailsScreen(
                             userId: userId,
                             busId: busId,
+                            busName: title,
                             driverId: driverId,
                             driverName: driverName,
                             driverPhoneNumber: driverPhoneNumber,
                             busPoints: busPoints,
+                            isActive: isActive, // Pass the isActive parameter
                           ),
                         ),
                       );
                     },
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all<Color>(
+                      foregroundColor: WidgetStateProperty.all<Color>(
                         const Color(0xFFD22525),
                       ),
-                      textStyle: MaterialStateProperty.all<TextStyle>(
+                      textStyle: WidgetStateProperty.all<TextStyle>(
                         const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      shape: MaterialStateProperty.all<OutlinedBorder>(
+                      shape: WidgetStateProperty.all<OutlinedBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),

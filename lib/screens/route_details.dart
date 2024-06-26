@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bus_iti/screens/bus_line.dart';
 import 'package:bus_iti/services/user_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +10,17 @@ import 'package:bus_iti/screens/update_driver.dart';
 import 'package:bus_iti/utils/app_styles.dart';
 import 'package:bus_iti/utils/subscription_state.dart';
 
+import '../services/bus.dart';
+
 class RouteDetailsScreen extends StatefulWidget {
   final String userId;
   final String busId;
   final String driverId;
+  String busName;
   String driverName;
   String driverPhoneNumber;
   final List<BusPoint> busPoints;
+  bool isActive;
 
   RouteDetailsScreen({
     super.key,
@@ -25,6 +30,7 @@ class RouteDetailsScreen extends StatefulWidget {
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
+    required this.isActive, required this.busName,
   });
 
   @override
@@ -33,6 +39,7 @@ class RouteDetailsScreen extends StatefulWidget {
 
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   bool _isAdmin = false;
+  final BusLines _busLinesService = BusLines();
 
   @override
   void initState() {
@@ -54,13 +61,39 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     });
   }
 
+  Future<void> _updateBusStatus(bool isActive) async {
+    try {
+      await _busLinesService.updateBusStatus(widget.busId, isActive);
+      setState(() {
+        widget.isActive = isActive;
+      });
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.scale,
+        title: 'Success',
+        desc: 'Bus status updated successfully',
+        btnOkOnPress: () {},
+      ).show();
+    } catch (e) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.scale,
+        title: 'Error',
+        desc: 'Failed to update bus status: $e',
+        btnOkOnPress: () {},
+      ).show();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final subscriptionState = Provider.of<SubscriptionState>(context);
     bool isSubscribed = subscriptionState.isSubscribed(widget.userId, widget.busId);
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'ITI'),
+      appBar: CustomAppBar(title:widget.busName),
       drawer: const CustomDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -121,12 +154,35 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 value: isSubscribed,
                 activeColor: Colors.green,
                 onChanged: (value) {
+                  if (!widget.isActive) {
+                    AwesomeDialog(
+                      context: context,
+                      dialogType: DialogType.error,
+                      animType: AnimType.scale,
+                      title: 'Error',
+                      desc: 'Sorry, this bus is not available at this time.',
+                      btnOkOnPress: () {},
+                      btnOkColor: const Color(0xEADC3333)
+                    ).show();
+                    return;
+                  }
+
                   if (value) {
                     subscriptionState.subscribe(widget.userId, widget.busId);
                   } else {
                     subscriptionState.unsubscribe(widget.userId, widget.busId);
                   }
                   setState(() {});
+                },
+              ),
+              SwitchListTile(
+                title: Text(
+                  widget.isActive ? 'Deactivate Bus' : 'Activate Bus',
+                ),
+                value: widget.isActive,
+                activeColor: Colors.green,
+                onChanged: (value) {
+                  _updateBusStatus(value);
                 },
               ),
               ElevatedButton(
@@ -144,7 +200,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                   style: AppStyles.buttonTextStyle,
                 ),
               ),
-              if (_isAdmin)
+              if (_isAdmin) ...[
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -165,6 +221,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     style: AppStyles.buttonTextStyle,
                   ),
                 ),
+              ],
             ],
           ),
         ),

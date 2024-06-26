@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:bus_iti/models/bus.dart';
 import '../utils/auth.dart';
-// import 'package:http_parser/http_parser.dart';
 
 class BusLines {
   Future<List<Bus>> getBuses() async {
@@ -28,60 +29,65 @@ class BusLines {
     }
   }
 
-  Future<void> createBus(
-      String name,
-      int capacity,
-      bool isActive,
-      String? imagePath,
-      List<Map<String, dynamic>> points,
-      String departureTime,
-      String arrivalTime) async {
-    try {
-      DateTime departureDateTime = DateTime.parse(departureTime).toUtc();
-      DateTime arrivalDateTime = DateTime.parse(arrivalTime).toUtc();
+  Future<void> createBus({
+    required String name,
+    required int capacity,
+    required bool isActive,
+    File? imageFile,
+    required List<Map<String, dynamic>> busPoints,
+    required String departureTime,
+    required String arrivalTime,
+    required String driverId,
+  }) async {
+    var url = Uri.parse('${dotenv.env['URL']!}buses');
+    CheckAuth checkAuth = CheckAuth();
+    await checkAuth.init();
+    Map<String, String?> tokens = await checkAuth.getTokens();
+    String accessToken = tokens['accessToken']!;
 
-      String formattedDepartureTime = departureDateTime.toIso8601String();
-      String formattedArrivalTime = arrivalDateTime.toIso8601String();
+    var request = http.MultipartRequest('POST', url)
+      ..fields['name'] = name
+      ..fields['capacity'] = capacity.toString()
+      ..fields['isActive'] = isActive.toString()
+      ..fields['busPoints'] = json.encode(busPoints)
+      ..fields['departureTime'] = departureTime
+      ..fields['arrivalTime'] = arrivalTime
+      ..fields['driverId'] = driverId;
 
-      List<Map<String, dynamic>> formattedPoints = points.map((point) {
-        if (point.containsKey('pickupTime')) {
-          DateTime pointPickupTime = DateTime.parse(point['pickupTime']).toUtc();
-          point['pickupTime'] = pointPickupTime.toIso8601String();
-        }
-        return point;
-      }).toList();
-
-      var url = Uri.parse('${dotenv.env['URL']!}buses/lines');
-      CheckAuth checkAuth = CheckAuth();
-      await checkAuth.init();
-      Map<String, String?> tokens = await checkAuth.getTokens();
-      String? accessToken = tokens['accessToken'];
-
-      Map<String, dynamic> requestBody = {
-        'name': name,
-        'capacity': capacity,
-        'isActive': isActive,
-        'busPoints': formattedPoints,
-        'departureTime': formattedDepartureTime,
-        'arrivalTime': formattedArrivalTime,
-      };
-
-      String requestBodyJson = json.encode(requestBody);
-
-      var response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: requestBodyJson,
+    if (imageFile != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath('image', imageFile.path),
       );
-      if (response.statusCode != 201) {
-        throw Exception('Failed to create bus: ${response.reasonPhrase} (${response.statusCode}) - ${response.body}');
-      }
-    } catch (e) {
-      rethrow;
-    }}
+    }
+
+    request.headers['Authorization'] = 'Bearer $accessToken';
+    //print("request fields are:  ${request.fields}")
+    var response = await request.send();
+    //print('response is: ${} ');
+    if (response.statusCode != 201) {
+      throw Exception('Failed to create bus');
+    }
+  }
+
+  Future<void> updateBusStatus(String busId, bool isActive) async {
+    var url = Uri.parse('${dotenv.env['URL']!}buses/lines/$busId');
+    CheckAuth checkAuth = CheckAuth();
+    await checkAuth.init();
+    Map<String, String?> tokens = await checkAuth.getTokens();
+    String accessToken = tokens['accessToken']!;
+
+    var response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: json.encode({'isActive': isActive}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update bus status');
+    }
+  }
 
   Future<void> subscribeToBus(String busLineId) async {
     var url = Uri.parse('${dotenv.env['URL']!}buses/users/');
@@ -89,7 +95,7 @@ class BusLines {
     await checkAuth.init();
     Map<String, String?> tokens = await checkAuth.getTokens();
     String accessToken = tokens['accessToken']!;
-    
+
     var response = await http.post(
       url,
       headers: {
@@ -110,7 +116,7 @@ class BusLines {
     await checkAuth.init();
     Map<String, String?> tokens = await checkAuth.getTokens();
     String accessToken = tokens['accessToken']!;
-    
+
     var response = await http.delete(
       url,
       headers: {

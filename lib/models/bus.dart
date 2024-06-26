@@ -5,14 +5,15 @@ import 'package:intl/intl.dart';
 class Bus {
   final String id;
   final String name;
-  final DateTime arrivalTime;
-  final DateTime departureTime;
+  final DateTime? arrivalTime;
+  final DateTime? departureTime;
   final bool isActive;
   final int capacity;
   final List<BusPoint> busPoints;
   final int? version;
   final Driver? driver;
   final String? imageUrl;
+  final String? cloudinaryPublicId;
 
   Bus({
     required this.id,
@@ -20,11 +21,12 @@ class Bus {
     required this.isActive,
     required this.capacity,
     required this.busPoints,
-    required this.arrivalTime,
-    required this.departureTime,
+    this.arrivalTime,
+    this.departureTime,
     this.version,
     this.driver,
     this.imageUrl,
+    this.cloudinaryPublicId,
   });
 
   factory Bus.fromJson(Map<String, dynamic> json) {
@@ -33,10 +35,10 @@ class Bus {
       name: json['name'] as String,
       arrivalTime: json['arrivalTime'] != null
           ? DateTime.parse(json['arrivalTime'] as String)
-          : DateTime.now(),
+          : null,
       departureTime: json['departureTime'] != null
           ? DateTime.parse(json['departureTime'] as String)
-          : DateTime.now(),
+          : null,
       isActive: json['isActive'] as bool,
       capacity: json['capacity'] as int,
       busPoints: (json['busPoints'] as List)
@@ -47,9 +49,10 @@ class Bus {
           ? Driver.fromJson(json['driverID'])
           : null,
       imageUrl: json['imageUrl'] as String?,
+      cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
     );
   }
 
-  String get formattedArrivalTime => DateFormat('hh:mm a').format(arrivalTime);
-  String get formattedDepartureTime => DateFormat('hh:mm a').format(departureTime);
+  String get formattedArrivalTime => arrivalTime != null ? DateFormat('hh:mm a').format(arrivalTime!) : '';
+  String get formattedDepartureTime => departureTime != null ? DateFormat('hh:mm a').format(departureTime!) : '';
 }

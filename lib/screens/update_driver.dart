@@ -25,7 +25,7 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _driverPhoneNumber;
   late String _selectedDriverId;
-  List<Driver> _drivers = [];
+  late List<Driver> _drivers;
   final DriverService _driverService = DriverService();
 
   @override
@@ -102,23 +102,26 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                DropdownButtonFormField<String>(
-                  value: _selectedDriverId,
-                  items: _drivers.map((driver) {
-                    return DropdownMenuItem<String>(
-                      value: driver.id,
-                      child: Text(driver.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDriverId = value!;
-                    });
-                  },
-                  decoration: AppStyles.inputDecoration.copyWith(
-                    labelText: 'Select Driver',
+                if (_drivers.isEmpty)
+                  const CircularProgressIndicator()
+                else
+                  DropdownButtonFormField<String>(
+                    value: _selectedDriverId,
+                    items: _drivers.map((driver) {
+                      return DropdownMenuItem<String>(
+                        value: driver.id,
+                        child: Text(driver.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedDriverId = value!;
+                      });
+                    },
+                    decoration: AppStyles.inputDecoration.copyWith(
+                      labelText: 'Select Driver',
+                    ),
                   ),
-                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   initialValue: _driverPhoneNumber,
