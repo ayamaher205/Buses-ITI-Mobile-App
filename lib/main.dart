@@ -7,6 +7,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:bus_iti/screens/home.dart';
 import 'package:bus_iti/screens/login.dart';
 import 'package:bus_iti/utils/subscription_state.dart';
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: const FirebaseOptions(
@@ -43,7 +45,7 @@ class _MyAppState extends State<MyApp> {
             iconTheme: IconThemeData(
               color: Color(0xFFD22525),
             ),
-            backgroundColor: Color(0x5ea9a8a8),
+            backgroundColor: Color(0x3d9a9a9a),
             foregroundColor: Color(0xFFD22525),
           ),
         ),
@@ -59,6 +61,7 @@ class _MyAppState extends State<MyApp> {
             }
           },
         ),
+        navigatorObservers: [routeObserver],
       ),
     );
   }

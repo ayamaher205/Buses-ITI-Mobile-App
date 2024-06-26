@@ -4,10 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
 import 'package:awesome_dialog/awesome_dialog.dart';
-
 import '../screens/selection_point.dart';
 import '../services/bus.dart';
-
 class BusForm extends StatefulWidget {
   const BusForm({super.key});
 
@@ -21,10 +19,10 @@ class BusFormState extends State<BusForm> {
   final _capacityController = TextEditingController();
   final _departureTimeController = TextEditingController();
   final _departureTimeIsoController =
-      TextEditingController(); // ISO format controller
+  TextEditingController(); // ISO format controller
   final _arrivalTimeController = TextEditingController();
   final _arrivalTimeIsoController =
-      TextEditingController(); // ISO format controller
+  TextEditingController(); // ISO format controller
   final _imageController = TextEditingController();
   bool _isActive = true;
   File? _imageFile;
@@ -71,7 +69,7 @@ class BusFormState extends State<BusForm> {
     if (picked != null) {
       final now = DateTime.now();
       final selectedTime =
-          DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+      DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
       final isoFormattedTime = selectedTime.toUtc().toIso8601String();
 
       final formattedTime = DateFormat('h:mm a').format(selectedTime);
@@ -88,7 +86,7 @@ class BusFormState extends State<BusForm> {
 
   Future<void> _pickImage() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -190,12 +188,18 @@ class BusFormState extends State<BusForm> {
               TextFormField(
                 controller: _imageController,
                 decoration: const InputDecoration(
-                  labelText: 'Select Image (optional)',
+                  labelText: 'Select Image',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.image),
                 ),
                 readOnly: true,
                 onTap: _pickImage,
+                validator: (value) {
+                  if (_imageFile == null) {
+                    return 'Please select an image';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -246,12 +250,12 @@ class BusFormState extends State<BusForm> {
                     _numPoints = int.tryParse(value) ?? 0;
                     _points = List.generate(
                         _numPoints,
-                        (index) => {
-                              'name': '',
-                              'latitude': 0.0,
-                              'longitude': 0.0,
-                              'pickupTime': '',
-                            });
+                            (index) => {
+                          'name': '',
+                          'latitude': 0.0,
+                          'longitude': 0.0,
+                          'pickupTime': '',
+                        });
                     _latControllers = List.generate(
                         _numPoints, (index) => TextEditingController());
                     _longControllers = List.generate(
@@ -273,7 +277,7 @@ class BusFormState extends State<BusForm> {
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.place),
                         floatingLabelStyle:
-                            const TextStyle(color: Color(0xFF9f9e9e)),
+                        const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
@@ -292,10 +296,10 @@ class BusFormState extends State<BusForm> {
                               labelText: 'Latitude',
                               border: OutlineInputBorder(),
                               floatingLabelStyle:
-                                  TextStyle(color: Color(0xFF9f9e9e)),
+                              TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
                                 borderSide:
-                                    BorderSide(color: Color(0xFF9f9e9e)),
+                                BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
                             onChanged: (value) {
@@ -312,10 +316,10 @@ class BusFormState extends State<BusForm> {
                               labelText: 'Longitude',
                               border: OutlineInputBorder(),
                               floatingLabelStyle:
-                                  TextStyle(color: Color(0xFF9f9e9e)),
+                              TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
                                 borderSide:
-                                    BorderSide(color: Color(0xFF9f9e9e)),
+                                BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
                             onChanged: (value) {
@@ -332,10 +336,10 @@ class BusFormState extends State<BusForm> {
                           ),
                           onPressed: () async {
                             LatLng? selectedPoint =
-                                await Navigator.of(context).push(
+                            await Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    const MapSelectionScreen(),
+                                const MapSelectionScreen(),
                               ),
                             );
                             if (selectedPoint != null) {
@@ -361,7 +365,7 @@ class BusFormState extends State<BusForm> {
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.access_time),
                         floatingLabelStyle:
-                            const TextStyle(color: Color(0xFF9f9e9e)),
+                        const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
@@ -384,13 +388,15 @@ class BusFormState extends State<BusForm> {
                       if (_formKey.currentState!.validate()) {
                         try {
                           await BusLines().createBus(
-                              _nameController.text,
-                              int.parse(_capacityController.text),
-                              _isActive,
-                              _imageFile?.path,
-                              _points,
-                              _departureTimeIsoController.text,
-                              _arrivalTimeIsoController.text);
+                            name: _nameController.text,
+                            capacity: int.parse(_capacityController.text),
+                            isActive: _isActive,
+                            imageFile: _imageFile,
+                            busPoints: _points,
+                            departureTime: _departureTimeIsoController.text,
+                            arrivalTime: _arrivalTimeIsoController.text,
+                            driverId: 'YOUR_DRIVER_ID_HERE', // Add your driver ID here
+                          );
                           _showDialog(context, true);
                         } catch (e) {
                           _showDialog(context, false);
@@ -409,7 +415,7 @@ class BusFormState extends State<BusForm> {
                     },
                     child: const Text('Reset',
                         style:
-                            TextStyle(fontSize: 20, color: Color(0xFFD22525))),
+                        TextStyle(fontSize: 20, color: Color(0xFFD22525))),
                   )
                 ],
               )

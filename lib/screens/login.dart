@@ -50,11 +50,17 @@ class _Logo extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            "Welcome to ITI!",
+            "Welcome to ITI New Capital",
             textAlign: TextAlign.center,
             style: isSmallScreen
-                ? Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.black)
-                : Theme.of(context).textTheme.headlineSmall!.copyWith(color: Colors.black),
+                ? Theme.of(context)
+                    .textTheme
+                    .titleLarge!
+                    .copyWith(color: Colors.black)
+                : Theme.of(context)
+                    .textTheme
+                    .headlineSmall!
+                    .copyWith(color: Colors.black),
           ),
         )
       ],
