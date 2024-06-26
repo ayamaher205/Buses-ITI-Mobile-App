@@ -1,3 +1,4 @@
+import 'package:bus_iti/screens/update_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -17,14 +18,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String lastName = '';
   String email = '';
   String role = '';
-  bool isEditing = false;
-
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _roleController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -37,111 +30,46 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     await _fetchUserProfile();
   }
 
-Future<void> _fetchUserProfile() async {
-  try {
-    final accessToken = prefs.getString('accessToken');
-    if (accessToken == null) {
-      throw Exception('No access token found');
-    }
-
-    final response = await http.get(
-      Uri.parse('${dotenv.env['URL']!}/users/me'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      final userData = json.decode(response.body)['user'];
-      if (mounted) {
-        setState(() {
-          firstName = userData['firstName'] ?? '';
-          lastName = userData['lastName'] ?? '';
-          email = userData['email'] ?? '';
-          role = userData['role'] ?? '';
-        });
-
-        _firstNameController.text = firstName;
-        _lastNameController.text = lastName;
-        _emailController.text = email;
-        _roleController.text = role;
+  Future<void> _fetchUserProfile() async {
+    try {
+      final accessToken = prefs.getString('accessToken');
+      if (accessToken == null) {
+        throw Exception('No access token found');
       }
-    } else {
-      final errorData = json.decode(response.body);
+
+      final response = await http.get(
+        Uri.parse('${dotenv.env['URL']!}/users/me'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+          print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body)['user'];
+        if (mounted) {
+          setState(() {
+            firstName = userData['firstName'] ?? '';
+            lastName = userData['lastName'] ?? '';
+            email = userData['email'] ?? '';
+            role = userData['role'] ?? '';
+          });
+        }
+      } else {
+        final errorData = json.decode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to load profile: ${errorData['message']}')),
+          );
+        }
+      }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load profile: ${errorData['message']}')),
+          SnackBar(content: Text('Failed to load profile: $e')),
         );
       }
-    }
-  } catch (e) {
-    print('Error fetching user profile: $e');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load profile: $e')),
-      );
-    }
-  }
-}
-
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _roleController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _updateUserProfile() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
-      );
-      return;
-    }
-
-    final accessToken = prefs.getString('accessToken');
-    if (accessToken == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No access token found')),
-      );
-      return;
-    }
-
-    final response = await http.patch(
-      Uri.parse('${dotenv.env['URL']!}/users/me'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-      body: json.encode({
-        'first_name': _firstNameController.text,
-        'last_name': _lastNameController.text,
-        'password': _passwordController.text.isNotEmpty ? _passwordController.text : null,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        firstName = _firstNameController.text;
-        lastName = _lastNameController.text;
-        isEditing = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile updated successfully')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile')),
-      );
     }
   }
 
@@ -152,13 +80,23 @@ Future<void> _fetchUserProfile() async {
         title: Text('User Profile'),
         actions: [
           IconButton(
-            icon: Icon(isEditing ? Icons.save : Icons.edit),
-            onPressed: () {
-              if (isEditing) {
-                _updateUserProfile();
-              } else {
+            icon: Icon(Icons.edit),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UpdateProfileScreen(
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    role: role,
+                  ),
+                ),
+              );
+              if (result != null && result is Map<String, String>) {
                 setState(() {
-                  isEditing = true;
+                  firstName = result['firstName']!;
+                  lastName = result['lastName']!;
                 });
               }
             },
@@ -166,7 +104,6 @@ Future<void> _fetchUserProfile() async {
         ],
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -176,39 +113,25 @@ Future<void> _fetchUserProfile() async {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: _firstNameController,
+              controller: TextEditingController(text: firstName),
               decoration: InputDecoration(labelText: 'First Name'),
-              enabled: isEditing,
+              enabled: false,
             ),
             TextField(
-              controller: _lastNameController,
+              controller: TextEditingController(text: lastName),
               decoration: InputDecoration(labelText: 'Last Name'),
-              enabled: isEditing,
+              enabled: false,
             ),
             TextField(
-              controller: _emailController,
+              controller: TextEditingController(text: email),
               decoration: InputDecoration(labelText: 'Email'),
               enabled: false,
             ),
             TextField(
-              controller: _roleController,
+              controller: TextEditingController(text: role),
               decoration: InputDecoration(labelText: 'Role'),
               enabled: false,
             ),
-            if (isEditing) ...[
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'New Password'),
-                obscureText: true,
-              ),
-              TextField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Confirm New Password'),
-                obscureText: true,
-              ),
-            ],
-            SizedBox(height: 16),
-        
           ],
         ),
       ),
