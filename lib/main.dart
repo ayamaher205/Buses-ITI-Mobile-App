@@ -6,7 +6,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:bus_iti/screens/home.dart';
 import 'package:bus_iti/screens/login.dart';
+import 'package:bus_iti/screens/splash.dart'; // Import the Splash Screen
 import 'package:bus_iti/utils/subscription_state.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: const FirebaseOptions(
@@ -47,18 +49,11 @@ class _MyAppState extends State<MyApp> {
             foregroundColor: Color(0xFFD22525),
           ),
         ),
-        home: FutureBuilder<Widget>(
-          future: determineInitialRoute(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              return snapshot.data ?? const LoginScreen();
-            }
-          },
-        ),
+        home: SplashScreen(), // Set SplashScreen as the initial screen
+        routes: {
+          '/home': (context) => const HomeScreen(),
+          '/login': (context) => const LoginScreen(),
+        },
       ),
     );
   }
@@ -67,6 +62,5 @@ class _MyAppState extends State<MyApp> {
 Future<Widget> determineInitialRoute() async {
   final prefs = await SharedPreferences.getInstance();
   final isLoggedIn = prefs.containsKey('accessToken');
-
   return isLoggedIn ? const HomeScreen() : const LoginScreen();
 }
