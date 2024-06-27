@@ -1,6 +1,7 @@
-import 'package:bus_iti/models/driver.dart';
-import 'package:bus_iti/models/bus_point.dart';
 import 'package:intl/intl.dart';
+
+import 'bus_point.dart';
+import 'driver.dart';
 
 class Bus {
   final String id;
@@ -14,6 +15,7 @@ class Bus {
   final Driver? driver;
   final String? imageUrl;
   final String? cloudinaryPublicId;
+  final int? remainingSeats;
 
   Bus({
     required this.id,
@@ -27,6 +29,7 @@ class Bus {
     this.driver,
     this.imageUrl,
     this.cloudinaryPublicId,
+    this.remainingSeats,
   });
 
   factory Bus.fromJson(Map<String, dynamic> json) {
@@ -50,6 +53,7 @@ class Bus {
           : null,
       imageUrl: json['imageUrl'] as String?,
       cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
+      remainingSeats: json['remainingSeats'] as int?,  // Add this field
     );
   }
 

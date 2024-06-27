@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bus_iti/screens/home.dart';
 import 'package:bus_iti/screens/profile.dart';
+import 'package:bus_iti/screens/total_passengers.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:bus_iti/utils/auth.dart';
@@ -97,10 +98,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
               ),
                 ListTile(
                   leading: const Icon(Icons.info_rounded),
-                  title: const Text('About'),
+                  title: const Text('Total Passengers'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TotalPassengersScreen()),
+                    );
                   },
                 ),
               ],

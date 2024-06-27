@@ -82,7 +82,7 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: LatLng(30.0406, 31.8025), // Center of Egypt
+              initialCenter: const LatLng(30.0406, 31.2389), // Center of Egypt
               initialZoom: 8.0,
               onTap: _onMapTap,
             ),

@@ -3,11 +3,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
-//import 'package:awesome_dialog/awesome_dialog.dart';
-
-//import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import '../models/driver.dart';
 import '../screens/selection_point.dart';
 import '../services/bus.dart';
+import '../services/driver.dart';
+
 class BusForm extends StatefulWidget {
   const BusForm({super.key});
 
@@ -21,10 +22,10 @@ class BusFormState extends State<BusForm> {
   final _capacityController = TextEditingController();
   final _departureTimeController = TextEditingController();
   final _departureTimeIsoController =
-  TextEditingController(); // ISO format controller
+      TextEditingController(); // ISO format controller
   final _arrivalTimeController = TextEditingController();
   final _arrivalTimeIsoController =
-  TextEditingController(); // ISO format controller
+      TextEditingController(); // ISO format controller
   final _imageController = TextEditingController();
   bool _isActive = true;
   File? _imageFile;
@@ -34,6 +35,14 @@ class BusFormState extends State<BusForm> {
   List<TextEditingController> _longControllers = [];
   List<TextEditingController> _pickupTimeControllers = [];
   List<TextEditingController> _pickupTimeIsoControllers = [];
+  List<Driver> _drivers = [];
+  String? _selectedDriverId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDrivers();
+  }
 
   @override
   void dispose() {
@@ -59,6 +68,18 @@ class BusFormState extends State<BusForm> {
     super.dispose();
   }
 
+  Future<void> _fetchDrivers() async {
+    try {
+      DriverService driverService = DriverService();
+      List<Driver> drivers = await driverService.getAllDrivers();
+      setState(() {
+        _drivers = drivers;
+      });
+    } catch (e) {
+      // Handle error
+    }
+  }
+
   Future<void> _selectTime(
       BuildContext context,
       TextEditingController displayController,
@@ -71,7 +92,7 @@ class BusFormState extends State<BusForm> {
     if (picked != null) {
       final now = DateTime.now();
       final selectedTime =
-      DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+          DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
       final isoFormattedTime = selectedTime.toUtc().toIso8601String();
 
       final formattedTime = DateFormat('h:mm a').format(selectedTime);
@@ -87,8 +108,7 @@ class BusFormState extends State<BusForm> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -97,32 +117,31 @@ class BusFormState extends State<BusForm> {
     }
   }
 
-  // Future<void> _showDialog(BuildContext context, bool isSuccess) async {
-  //   AwesomeDialog(
-  //     context: context,
-  //     animType: AnimType.leftSlide,
-  //     headerAnimationLoop: false,
-  //     dialogType: isSuccess ? DialogType.success : DialogType.error,
-  //     showCloseIcon: true,
-  //     title: isSuccess ? 'Success' : 'Failure',
-  //     desc: isSuccess
-  //         ? 'Bus Created successfully.'
-  //         : 'Bus creation failed. Please try again.',
-  //     btnOkOnPress: () {
-  //       if (isSuccess) {
-  //         Navigator.of(context).pop();
-  //       }
-  //     },
-  //     btnOkColor: isSuccess ? const Color(0xFF13DC2E) :
-  //     const Color(0xDFD22525),
-  //     // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
-  //     onDismissCallback: (type) {
-  //       if (isSuccess) {
-  //         Navigator.of(context).pop();
-  //       }
-  //     },
-  //   ).show();
-  // }
+  Future<void> _showDialog(BuildContext context, bool isSuccess) async {
+    AwesomeDialog(
+      context: context,
+      animType: AnimType.leftSlide,
+      headerAnimationLoop: false,
+      dialogType: isSuccess ? DialogType.success : DialogType.error,
+      showCloseIcon: true,
+      title: isSuccess ? 'Success' : 'Failure',
+      desc: isSuccess
+          ? 'Bus Created successfully.'
+          : 'Bus creation failed. Please try again.',
+      btnOkOnPress: () {
+        if (isSuccess) {
+          Navigator.of(context).pop();
+        }
+      },
+      btnOkColor: isSuccess ? const Color(0xFF13DC2E) : const Color(0xDFD22525),
+      // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
+      onDismissCallback: (type) {
+        if (isSuccess) {
+          Navigator.of(context).pop();
+        }
+      },
+    ).show();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +210,9 @@ class BusFormState extends State<BusForm> {
                 controller: _imageController,
                 decoration: const InputDecoration(
                   labelText: 'Select Image',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF9f9e9e)),
+                  ),
                   prefixIcon: Icon(Icons.image),
                 ),
                 readOnly: true,
@@ -215,6 +236,12 @@ class BusFormState extends State<BusForm> {
                     borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the Arrival Time';
+                  }
+                  return null;
+                },
                 readOnly: true,
                 onTap: () => _selectTime(
                     context, _arrivalTimeController, _arrivalTimeIsoController),
@@ -231,6 +258,12 @@ class BusFormState extends State<BusForm> {
                     borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the Departure Time';
+                  }
+                  return null;
+                },
                 readOnly: true,
                 onTap: () => _selectTime(context, _departureTimeController,
                     _departureTimeIsoController),
@@ -246,18 +279,24 @@ class BusFormState extends State<BusForm> {
                     borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter number of points';
+                  }
+                  return null;
+                },
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   setState(() {
                     _numPoints = int.tryParse(value) ?? 0;
                     _points = List.generate(
                         _numPoints,
-                            (index) => {
-                          'name': '',
-                          'latitude': 0.0,
-                          'longitude': 0.0,
-                          'pickupTime': '',
-                        });
+                        (index) => {
+                              'name': '',
+                              'latitude': 0.0,
+                              'longitude': 0.0,
+                              'pickupTime': '',
+                            });
                     _latControllers = List.generate(
                         _numPoints, (index) => TextEditingController());
                     _longControllers = List.generate(
@@ -279,11 +318,17 @@ class BusFormState extends State<BusForm> {
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.place),
                         floatingLabelStyle:
-                        const TextStyle(color: Color(0xFF9f9e9e)),
+                            const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter point name';
+                        }
+                        return null;
+                      },
                       onChanged: (value) {
                         _points[i]['name'] = value;
                       },
@@ -298,12 +343,18 @@ class BusFormState extends State<BusForm> {
                               labelText: 'Latitude',
                               border: OutlineInputBorder(),
                               floatingLabelStyle:
-                              TextStyle(color: Color(0xFF9f9e9e)),
+                                  TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
                                 borderSide:
-                                BorderSide(color: Color(0xFF9f9e9e)),
+                                    BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select point';
+                              }
+                              return null;
+                            },
                             onChanged: (value) {
                               _points[i]['latitude'] =
                                   double.tryParse(value) ?? 0.0;
@@ -318,12 +369,18 @@ class BusFormState extends State<BusForm> {
                               labelText: 'Longitude',
                               border: OutlineInputBorder(),
                               floatingLabelStyle:
-                              TextStyle(color: Color(0xFF9f9e9e)),
+                                  TextStyle(color: Color(0xFF9f9e9e)),
                               focusedBorder: OutlineInputBorder(
                                 borderSide:
-                                BorderSide(color: Color(0xFF9f9e9e)),
+                                    BorderSide(color: Color(0xFF9f9e9e)),
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select point';
+                              }
+                              return null;
+                            },
                             onChanged: (value) {
                               _points[i]['longitude'] =
                                   double.tryParse(value) ?? 0.0;
@@ -338,10 +395,10 @@ class BusFormState extends State<BusForm> {
                           ),
                           onPressed: () async {
                             LatLng? selectedPoint =
-                            await Navigator.of(context).push(
+                                await Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                const MapSelectionScreen(),
+                                    const MapSelectionScreen(),
                               ),
                             );
                             if (selectedPoint != null) {
@@ -367,11 +424,17 @@ class BusFormState extends State<BusForm> {
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.access_time),
                         floatingLabelStyle:
-                        const TextStyle(color: Color(0xFF9f9e9e)),
+                            const TextStyle(color: Color(0xFF9f9e9e)),
                         focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Color(0xFF9f9e9e)),
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter Pickup Time';
+                        }
+                        return null;
+                      },
                       readOnly: true,
                       onTap: () => _selectTime(
                           context,
@@ -382,6 +445,36 @@ class BusFormState extends State<BusForm> {
                     const SizedBox(height: 16),
                   ],
                 ),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Select Driver',
+                  border: OutlineInputBorder(),
+                  floatingLabelStyle: TextStyle(color: Color(0xFF9f9e9e)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF9f9e9e)),
+                  ),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                value: _selectedDriverId,
+                items: _drivers.map((Driver driver) {
+                  return DropdownMenuItem<String>(
+                    value: driver.id,
+                    child: Text(driver.name),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedDriverId = newValue;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a driver';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -397,7 +490,7 @@ class BusFormState extends State<BusForm> {
                             busPoints: _points,
                             departureTime: _departureTimeIsoController.text,
                             arrivalTime: _arrivalTimeIsoController.text,
-                            driverId: 'YOUR_DRIVER_ID_HERE', // Add your driver ID here
+                            driverId: _selectedDriverId!,
                           );
                           //_showDialog(context, true);
                         } catch (e) {
@@ -417,7 +510,7 @@ class BusFormState extends State<BusForm> {
                     },
                     child: const Text('Reset',
                         style:
-                        TextStyle(fontSize: 20, color: Color(0xFFD22525))),
+                            TextStyle(fontSize: 20, color: Color(0xFFD22525))),
                   )
                 ],
               )
