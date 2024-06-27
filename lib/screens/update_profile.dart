@@ -11,12 +11,12 @@ class UpdateProfileScreen extends StatefulWidget {
   final String role;
 
   const UpdateProfileScreen({
-    Key? key,
+    super.key,
     required this.firstName,
     required this.lastName,
     required this.email,
     required this.role,
-  }) : super(key: key);
+  });
 
   @override
   State<UpdateProfileScreen> createState() => _UpdateProfileScreenState();
@@ -29,6 +29,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _showConfirmPassword = false;
 
   @override
   void initState() {
@@ -50,7 +51,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     final accessToken = prefs.getString('accessToken');
     if (accessToken == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No access token found')),
+        const SnackBar(content: Text('No access token found')),
       );
       return;
     }
@@ -61,6 +62,12 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     };
 
     if (_passwordController.text.isNotEmpty) {
+      if (_passwordController.text.length < 8 || _passwordController.text.length > 25) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password must be between 8 and 25 characters')),
+        );
+        return;
+      }
       updateData['password'] = _passwordController.text;
     }
 
@@ -77,7 +84,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile updated successfully')),
+        const SnackBar(content: Text('Profile updated successfully')),
       );
       Navigator.pop(context, {
         'firstName': _firstNameController.text,
@@ -85,7 +92,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile')),
+        const SnackBar(content: Text('Failed to update profile')),
       );
     }
   }
@@ -103,17 +110,26 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     if (_passwordController.text != _confirmPasswordController.text) {
       return 'Passwords do not match';
     }
+    if (value != null && (value.length < 8 || value.length > 25)) {
+      return 'Password must be between 8 and 25 characters';
+    }
     return null;
+  }
+
+  void _toggleConfirmPassword(bool show) {
+    setState(() {
+      _showConfirmPassword = show;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Profile'),
+        title: const Text('Update Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.save),
+            icon: const Icon(Icons.save),
             onPressed: _updateUserProfile,
           ),
         ],
@@ -126,7 +142,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
             children: [
               TextFormField(
                 controller: _firstNameController,
-                decoration: InputDecoration(labelText: 'First Name'),
+                decoration: const InputDecoration(labelText: 'First Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your first name';
@@ -136,7 +152,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               ),
               TextFormField(
                 controller: _lastNameController,
-                decoration: InputDecoration(labelText: 'Last Name'),
+                decoration: const InputDecoration(labelText: 'Last Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your last name';
@@ -146,26 +162,30 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               ),
               TextFormField(
                 controller: TextEditingController(text: widget.email),
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(labelText: 'Email'),
                 enabled: false,
               ),
               TextFormField(
                 controller: TextEditingController(text: widget.role),
-                decoration: InputDecoration(labelText: 'Role'),
+                decoration: const InputDecoration(labelText: 'Role'),
                 enabled: false,
               ),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'New Password'),
+                decoration: const InputDecoration(labelText: 'New Password'),
                 obscureText: true,
                 validator: _validatePassword,
+                onChanged: (value) {
+                  _toggleConfirmPassword(value.isNotEmpty);
+                },
               ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Confirm New Password'),
-                obscureText: true,
-                validator: _validatePassword,
-              ),
+              if (_showConfirmPassword)
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                  obscureText: true,
+                  validator: _validatePassword,
+                ),
             ],
           ),
         ),

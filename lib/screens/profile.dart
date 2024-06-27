@@ -1,9 +1,9 @@
-import 'package:bus_iti/screens/update_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bus_iti/screens/update_profile.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -44,7 +44,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           'Authorization': 'Bearer $accessToken',
         },
       );
-          print('Response body: ${response.body}');
+
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final userData = json.decode(response.body)['user'];
@@ -77,10 +78,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: const Text('User Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -107,33 +108,39 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 50,
               backgroundImage: NetworkImage('https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_640.png'),
             ),
-            SizedBox(height: 20),
-            TextField(
-              controller: TextEditingController(text: firstName),
-              decoration: InputDecoration(labelText: 'First Name'),
-              enabled: false,
-            ),
-            TextField(
-              controller: TextEditingController(text: lastName),
-              decoration: InputDecoration(labelText: 'Last Name'),
-              enabled: false,
-            ),
-            TextField(
-              controller: TextEditingController(text: email),
-              decoration: InputDecoration(labelText: 'Email'),
-              enabled: false,
-            ),
-            TextField(
-              controller: TextEditingController(text: role),
-              decoration: InputDecoration(labelText: 'Role'),
-              enabled: false,
-            ),
+            const SizedBox(height: 20),
+            _buildProfileField('First Name', firstName),
+            _buildProfileField('Last Name', lastName),
+            _buildProfileField('Email', email),
+            _buildProfileField('Role', role),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: TextEditingController(text: value),
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+        enabled: false,
       ),
     );
   }

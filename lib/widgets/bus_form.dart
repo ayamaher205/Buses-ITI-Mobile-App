@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart'; // For formatting time
 import 'dart:io'; // For File
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import '../models/driver.dart';
 import '../screens/selection_point.dart';
 import '../services/bus.dart';
@@ -133,7 +134,8 @@ class BusFormState extends State<BusForm> {
           Navigator.of(context).pop();
         }
       },
-      btnOkColor: isSuccess ? const Color(0xFF13DC2E) : const Color(0xDFD22525),
+      btnOkColor: isSuccess ? const Color(0xFF13DC2E) :
+      const Color(0xDFD22525),
       // btnOkIcon: isSuccess ? Icons.check_circle : Icons.error,
       onDismissCallback: (type) {
         if (isSuccess) {
@@ -492,9 +494,9 @@ class BusFormState extends State<BusForm> {
                             arrivalTime: _arrivalTimeIsoController.text,
                             driverId: _selectedDriverId!,
                           );
-                          //_showDialog(context, true);
+                          _showDialog(context, true);
                         } catch (e) {
-                          //_showDialog(context, false);
+                          _showDialog(context, false);
                         }
                       }
                     },
