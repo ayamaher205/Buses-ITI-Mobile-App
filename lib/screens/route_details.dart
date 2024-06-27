@@ -1,7 +1,6 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:bus_iti/screens/bus_line.dart';
 import 'package:bus_iti/services/user_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bus_iti/widgets/custom_drawer.dart';
 import 'package:bus_iti/widgets/custom_appBar.dart';
@@ -9,6 +8,7 @@ import 'package:bus_iti/models/bus_point.dart';
 import 'package:bus_iti/screens/update_driver.dart';
 import 'package:bus_iti/utils/app_styles.dart';
 import 'package:bus_iti/utils/subscription_state.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 import '../services/bus.dart';
 
@@ -16,11 +16,12 @@ class RouteDetailsScreen extends StatefulWidget {
   final String userId;
   final String busId;
   final String driverId;
-  String busName;
+  final String busName;
   String driverName;
   String driverPhoneNumber;
   final List<BusPoint> busPoints;
-  bool isActive;
+  final bool isActive;
+  final String imageUrl;
 
   RouteDetailsScreen({
     super.key,
@@ -30,7 +31,9 @@ class RouteDetailsScreen extends StatefulWidget {
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
-    required this.isActive, required this.busName,
+    required this.isActive,
+    required this.busName,
+    required this.imageUrl,
   });
 
   @override
@@ -61,39 +64,13 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     });
   }
 
-  Future<void> _updateBusStatus(bool isActive) async {
-    try {
-      await _busLinesService.updateBusStatus(widget.busId, isActive);
-      setState(() {
-        widget.isActive = isActive;
-      });
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        animType: AnimType.scale,
-        title: 'Success',
-        desc: 'Bus status updated successfully',
-        btnOkOnPress: () {},
-      ).show();
-    } catch (e) {
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.error,
-        animType: AnimType.scale,
-        title: 'Error',
-        desc: 'Failed to update bus status: $e',
-        btnOkOnPress: () {},
-      ).show();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final subscriptionState = Provider.of<SubscriptionState>(context);
     bool isSubscribed = subscriptionState.isSubscribed(widget.userId, widget.busId);
 
     return Scaffold(
-      appBar: CustomAppBar(title:widget.busName),
+      appBar: CustomAppBar(title: widget.busName),
       drawer: const CustomDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -106,11 +83,17 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(5),
-                    child: Image.asset(
-                      'images/default_bus_image.jpg',
-                      width: 100,
-                      fit: BoxFit.cover,
-                    ),
+                    child: widget.imageUrl.isNotEmpty
+                        ? Image.network(
+                            widget.imageUrl,
+                            width: 100,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.asset(
+                            'images/default_bus_image.jpg',
+                            width: 100,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   const SizedBox(width: 14.0),
                   Flexible(

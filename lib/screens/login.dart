@@ -13,19 +13,22 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       body: Center(
-        child: isSmallScreen
-            ? const Column(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  _Logo(errorMessage: null),
+                  SizedBox(height: 16),
                   _FormContent(),
                 ],
-              )
-            : const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: _FormContent()),
-                ],
               ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -44,7 +47,7 @@ class _Logo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset(
-          'images/iti.png',
+          'images/iti-logo.png',
           height: isSmallScreen ? 100 : 200,
         ),
         Padding(
@@ -55,8 +58,14 @@ class _Logo extends StatelessWidget {
                 "Welcome to ITI New Capital",
                 textAlign: TextAlign.center,
                 style: isSmallScreen
-                    ? Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.black)
-                    : Theme.of(context).textTheme.headlineSmall!.copyWith(color: Colors.black),
+                    ? Theme.of(context)
+                        .textTheme
+                        .headlineSmall!
+                        .copyWith(color: Colors.black)
+                    : Theme.of(context)
+                        .textTheme
+                        .headlineMedium!
+                        .copyWith(color: Colors.black),
               ),
               if (errorMessage != null) ...[
                 const SizedBox(height: 8),
@@ -68,7 +77,8 @@ class _Logo extends StatelessWidget {
               ],
             ],
           ),
-        )
+        ),
+        const SizedBox(height: 8), // Space between logo and form
       ],
     );
   }
@@ -115,72 +125,74 @@ class _FormContentState extends State<_FormContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _Logo(errorMessage: _errorMessage),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextFormField(
-                  decoration: AppStyles.inputDecoration.copyWith(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    } else if (!EmailValidator.validate(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _email = value!;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: AppStyles.inputDecoration.copyWith(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    } else if (value.length < 8 || value.length > 25) {
-                      return 'Password must be between 8 and 25 characters';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _password = value!;
-                  },
-                ),
-                const SizedBox(height: 20),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: _login,
-                        style: AppStyles.elevatedButtonStyle,
-                        child: const Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Text(
-                            'Login',
-                            style: AppStyles.buttonTextStyle,
-                          ),
-                        ),
-                      ),
-              ],
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_errorMessage != null) ...[
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+            ],
+            TextFormField(
+              decoration: AppStyles.inputDecoration.copyWith(
+                labelText: 'Email',
+                prefixIcon: const Icon(Icons.email_outlined),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                } else if (!EmailValidator.validate(value)) {
+                  return 'Please enter a valid email';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                _email = value!;
+              },
             ),
-          ),
+            const SizedBox(height: 16),
+            TextFormField(
+              decoration: AppStyles.inputDecoration.copyWith(
+                labelText: 'Password',
+                prefixIcon: const Icon(Icons.lock_outline_rounded),
+              ),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                } else if (value.length < 8 || value.length > 25) {
+                  return 'Password must be between 8 and 25 characters';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                _password = value!;
+              },
+            ),
+            const SizedBox(height: 20),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    style: AppStyles.elevatedButtonStyle,
+                    child: const Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: Text(
+                        'Login',
+                        style: AppStyles.buttonTextStyle,
+                      ),
+                    ),
+                  ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

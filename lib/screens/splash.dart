@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('images/iti.png', height: 200), 
+              Image.asset('images/iti-logo.png', height: 200), 
               const SizedBox(height: 20),
             ],
           ),

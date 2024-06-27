@@ -27,7 +27,7 @@ class BusCard extends StatelessWidget {
     required this.driverName,
     required this.driverPhoneNumber,
     required this.busPoints,
-    required this.isActive, // Add the isActive parameter
+    required this.isActive,
   });
 
   @override
@@ -49,17 +49,17 @@ class BusCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(5),
                   child: imageUrl.isNotEmpty
                       ? Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    height: 80,
-                    width: 80,
-                  )
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          height: 80,
+                          width: 80,
+                        )
                       : Image.asset(
-                    'images/default_bus_image.jpg',
-                    fit: BoxFit.cover,
-                    height: 80,
-                    width: 80,
-                  ),
+                          'images/default_bus_image.jpg',
+                          fit: BoxFit.cover,
+                          height: 80,
+                          width: 80,
+                        ),
                 ),
                 const SizedBox(width: 10.0),
                 Expanded(
@@ -133,22 +133,23 @@ class BusCard extends StatelessWidget {
                             driverName: driverName,
                             driverPhoneNumber: driverPhoneNumber,
                             busPoints: busPoints,
-                            isActive: isActive, // Pass the isActive parameter
+                            isActive: isActive,
+                            imageUrl: imageUrl,
                           ),
                         ),
                       );
                     },
                     style: ButtonStyle(
-                      foregroundColor: WidgetStateProperty.all<Color>(
+                      foregroundColor: MaterialStateProperty.all<Color>(
                         const Color(0xFFD22525),
                       ),
-                      textStyle: WidgetStateProperty.all<TextStyle>(
+                      textStyle: MaterialStateProperty.all<TextStyle>(
                         const TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      shape: WidgetStateProperty.all<OutlinedBorder>(
+                      shape: MaterialStateProperty.all<OutlinedBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
