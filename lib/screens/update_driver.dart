@@ -25,7 +25,7 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _driverPhoneNumber;
   late String _selectedDriverId;
-  late List<Driver> _drivers;
+  List<Driver>? _drivers;
   final DriverService _driverService = DriverService();
 
   @override
@@ -56,7 +56,7 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
       try {
         final updatedDriver = await _driverService.updateDriver(
           driverId: _selectedDriverId,
-          name: _drivers.firstWhere((driver) => driver.id == _selectedDriverId).name,
+          name: _drivers!.firstWhere((driver) => driver.id == _selectedDriverId).name,
           phoneNumber: _driverPhoneNumber,
         );
 
@@ -66,7 +66,7 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
           const SnackBar(content: Text('Driver details updated successfully')),
         );
 
-        Navigator.pop(context);
+        Navigator.pop(context, updatedDriver);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString())),
@@ -99,49 +99,50 @@ class _UpdateDriverScreenState extends State<UpdateDriverScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_drivers.isEmpty)
-                  const CircularProgressIndicator()
-                else
-                  DropdownButtonFormField<String>(
-                    value: _selectedDriverId,
-                    items: _drivers.map((driver) {
-                      return DropdownMenuItem<String>(
-                        value: driver.id,
-                        child: Text(driver.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDriverId = value!;
-                      });
-                    },
-                    decoration: AppStyles.inputDecoration.copyWith(
-                      labelText: 'Select Driver',
-                    ),
+            child: _drivers == null || _drivers!.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: _selectedDriverId,
+                        items: _drivers!.map((driver) {
+                          return DropdownMenuItem<String>(
+                            value: driver.id,
+                            child: Text(driver.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedDriverId = value!;
+                          });
+                        },
+                        decoration: AppStyles.inputDecoration.copyWith(
+                          labelText: 'Select Driver',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _driverPhoneNumber,
+                        decoration: AppStyles.inputDecoration.copyWith(
+                          labelText: 'Driver Phone Number',
+                        ),
+                        style: const TextStyle(color: Colors.black),
+                        validator: _validatePhoneNumber,
+                        onSaved: (value) {
+                          _driverPhoneNumber = value!;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _updateDriver,
+                        style: AppStyles.elevatedButtonStyle,
+                        child: const Text('Update', style: AppStyles.buttonTextStyle),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  initialValue: _driverPhoneNumber,
-                  decoration: AppStyles.inputDecoration.copyWith(
-                    labelText: 'Driver Phone Number',
-                  ),
-                  style: const TextStyle(color: Colors.black),
-                  validator: _validatePhoneNumber,
-                  onSaved: (value) {
-                    _driverPhoneNumber = value!;
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _updateDriver,
-                  style: AppStyles.elevatedButtonStyle,
-                  child: const Text('Update', style: AppStyles.buttonTextStyle),
-                ),
-              ],
-            ),
           ),
         ),
       ),

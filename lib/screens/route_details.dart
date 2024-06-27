@@ -8,7 +8,7 @@ import 'package:bus_iti/models/bus_point.dart';
 import 'package:bus_iti/screens/update_driver.dart';
 import 'package:bus_iti/utils/app_styles.dart';
 import 'package:bus_iti/utils/subscription_state.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/bus.dart';
 
@@ -42,6 +42,7 @@ class RouteDetailsScreen extends StatefulWidget {
 
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   bool _isAdmin = false;
+  late SubscriptionState subscriptionState;
   final BusLines _busLinesService = BusLines();
 
   @override
@@ -64,9 +65,18 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     });
   }
 
+  void _launchPhone(String phoneNumber) async {
+    String url = 'tel:$phoneNumber';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final subscriptionState = Provider.of<SubscriptionState>(context);
+    subscriptionState = Provider.of<SubscriptionState>(context);
     bool isSubscribed = subscriptionState.isSubscribed(widget.userId, widget.busId);
 
     return Scaffold(
@@ -106,9 +116,23 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                           'Driver Name: ${widget.driverName}',
                           style: const TextStyle(fontSize: 15.0),
                         ),
-                        Text(
-                          'Driver Number: ${widget.driverPhoneNumber}',
-                          style: const TextStyle(fontSize: 15.0),
+                        Row(
+                          children: [
+                            const Icon(Icons.phone),
+                            GestureDetector(
+                              onTap: () {
+                                _launchPhone(widget.driverPhoneNumber);
+                              },
+                              child: Text(
+                                ' ${widget.driverPhoneNumber}',
+                                style: const TextStyle(
+                                  fontSize: 15.0,
+                                  color: Colors.black,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -138,7 +162,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 activeColor: Colors.green,
                 onChanged: (value) {
                   if (!widget.isActive) {
-                    AwesomeDialog(
+                    /*AwesomeDialog(
                       context: context,
                       dialogType: DialogType.error,
                       animType: AnimType.scale,
@@ -147,7 +171,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                       btnOkOnPress: () {},
                       btnOkColor: const Color(0xEADC3333)
                     ).show();
-                    return;
+                    return;*/
                   }
 
                   if (value) {
@@ -165,7 +189,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 value: widget.isActive,
                 activeColor: Colors.green,
                 onChanged: (value) {
-                  _updateBusStatus(value);
+                  //_updateBusStatus(value);
                 },
               ),
               ElevatedButton(
@@ -185,8 +209,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
               ),
               if (_isAdmin) ...[
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    final updatedDriver = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => UpdateDriverScreen(
@@ -197,6 +221,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                         ),
                       ),
                     );
+                    if (updatedDriver != null) {
+                      setState(() {
+                        widget.driverName = updatedDriver.name;
+                        widget.driverPhoneNumber = updatedDriver.phoneNumber;
+                      });
+                    }
                   },
                   style: AppStyles.elevatedButtonStyle,
                   child: const Text(

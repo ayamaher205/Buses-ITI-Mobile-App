@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bus_iti/models/driver.dart';
 import 'package:bus_iti/utils/auth.dart';
 
@@ -59,5 +59,4 @@ class DriverService {
     var jsonResponse = json.decode(response.body);
     return Driver.fromJson(jsonResponse);
   }
-
 }
