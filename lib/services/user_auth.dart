@@ -7,7 +7,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 class UserAuth {
   static final String _baseUrl = dotenv.env['URL']!;
-  static final String _loginUrl = '$_baseUrl/auth/login';
+  static final String _loginUrl = '$_baseUrl/auth/login/mobile';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
@@ -28,6 +28,8 @@ class UserAuth {
       return {'error': 'Validation error'};
     } else if (response.statusCode == 401) {
       return {'error': 'Invalid email or password'};
+    } else if (response.statusCode == 403) {
+      return {'error': 'You should book an event first to login'};
     } else {
       return {'error': 'Failed to login'};
     }
