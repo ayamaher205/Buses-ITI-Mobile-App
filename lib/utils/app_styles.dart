@@ -37,4 +37,9 @@ class AppStyles {
       fontSize: 20,
     ),
   );
+
+  static const errorTextStyle = TextStyle(
+    color: Colors.red,
+    fontSize: 14,
+  );
 }
