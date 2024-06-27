@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bus_iti/screens/update_profile.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({Key? key}) : super(key: key);
+  const UserProfileScreen({super.key});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -78,10 +78,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: const Text('User Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -108,11 +108,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 50,
               backgroundImage: NetworkImage('https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_640.png'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildProfileField('First Name', firstName),
             _buildProfileField('Last Name', lastName),
             _buildProfileField('Email', email),
@@ -130,13 +130,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         controller: TextEditingController(text: value),
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
-          labelStyle: TextStyle(
+          border: const OutlineInputBorder(),
+          labelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
         ),
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),

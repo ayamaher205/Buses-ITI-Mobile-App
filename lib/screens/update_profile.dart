@@ -61,6 +61,12 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     };
 
     if (_passwordController.text.isNotEmpty) {
+      if (_passwordController.text.length < 8 || _passwordController.text.length > 25) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Password must be between 8 and 25 characters')),
+        );
+        return;
+      }
       updateData['password'] = _passwordController.text;
     }
 
@@ -102,6 +108,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   String? _validatePassword(String? value) {
     if (_passwordController.text != _confirmPasswordController.text) {
       return 'Passwords do not match';
+    }
+    if (value != null && (value.length < 8 || value.length > 25)) {
+      return 'Password must be between 8 and 25 characters';
     }
     return null;
   }
