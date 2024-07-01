@@ -209,25 +209,6 @@ class BusFormState extends State<BusForm> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _imageController,
-                decoration: const InputDecoration(
-                  labelText: 'Select Image',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF9f9e9e)),
-                  ),
-                  prefixIcon: Icon(Icons.image),
-                ),
-                readOnly: true,
-                onTap: _pickImage,
-                validator: (value) {
-                  if (_imageFile == null) {
-                    return 'Please select an image';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
                 controller: _arrivalTimeController,
                 decoration: const InputDecoration(
                   labelText: 'Arrival Time',
@@ -485,15 +466,13 @@ class BusFormState extends State<BusForm> {
                       if (_formKey.currentState!.validate()) {
                         try {
                           await BusLines().createBus(
-                            name: _nameController.text,
-                            capacity: int.parse(_capacityController.text),
-                            isActive: _isActive,
-                            imageFile: _imageFile,
-                            busPoints: _points,
-                            departureTime: _departureTimeIsoController.text,
-                            arrivalTime: _arrivalTimeIsoController.text,
-                            driverId: _selectedDriverId!,
-                          );
+                              _nameController.text,
+                              int.parse(_capacityController.text),
+                              _isActive,
+                              _imageFile?.path,
+                              _points,
+                              _departureTimeIsoController.text,
+                              _arrivalTimeIsoController.text);
                           _showDialog(context, true);
                         } catch (e) {
                           _showDialog(context, false);

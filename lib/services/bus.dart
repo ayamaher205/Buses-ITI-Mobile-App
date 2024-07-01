@@ -4,9 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:bus_iti/models/bus.dart';
 import '../utils/auth.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:path/path.dart' as path;
-
 
 
 class BusLines {
@@ -16,7 +13,6 @@ class BusLines {
     await checkAuth.init();
     Map<String, String?> tokens = await checkAuth.getTokens();
     String accessToken = tokens['accessToken']!;
-    print(accessToken);
     var response = await http.get(
       url,
       headers: {
@@ -25,7 +21,6 @@ class BusLines {
       },
     );
     if (response.statusCode == 200) {
-      print(response.body);
       List<dynamic> jsonResponse = json.decode(response.body);
       List<Bus> buses = jsonResponse.map((bus) => Bus.fromJson(bus)).toList();
       return buses;
@@ -34,66 +29,61 @@ class BusLines {
     }
   }
 
-  Future<void> createBus({
-    required String name,
-    required int capacity,
-    required bool isActive,
-    File? imageFile,
-    required List<Map<String, dynamic>> busPoints,
-    required String departureTime,
-    required String arrivalTime,
-    required String driverId,
-  }) async {
-    var url = Uri.parse('${dotenv.env['URL']!}buses/lines');
-    CheckAuth checkAuth = CheckAuth();
-    await checkAuth.init();
-    Map<String, String?> tokens = await checkAuth.getTokens();
-    String accessToken = tokens['accessToken']!;
+  Future<void> createBus(
+      String name,
+      int capacity,
+      bool isActive,
+      String? imagePath,
+      List<Map<String, dynamic>> points,
+      String departureTime,
+      String arrivalTime) async {
+    try {
+      DateTime departureDateTime = DateTime.parse(departureTime).toUtc();
+      DateTime arrivalDateTime = DateTime.parse(arrivalTime).toUtc();
 
-    var request = http.MultipartRequest('POST', url)
-      ..fields['name'] = name
-      ..fields['capacity'] = capacity.toString()
-      ..fields['isActive'] = isActive.toString()
-      ..fields['busPoints'] = json.encode(busPoints)
-      ..fields['departureTime'] = departureTime
-      ..fields['arrivalTime'] = arrivalTime
-      ..fields['driverId'] = driverId;
+      String formattedDepartureTime = departureDateTime.toIso8601String();
+      String formattedArrivalTime = arrivalDateTime.toIso8601String();
 
-    if (imageFile != null) {
-      String mimeType;
-      String extension = path.extension(imageFile.path).toLowerCase();
-      if (extension == '.jpg' || extension == '.jpeg') {
-        mimeType = 'image/jpeg';
-      } else if (extension == '.png') {
-        mimeType = 'image/png';
-      } else {
-        throw Exception('Unsupported image format');
-      }
+      List<Map<String, dynamic>> formattedPoints = points.map((point) {
+        if (point.containsKey('pickupTime')) {
+          DateTime pointPickupTime = DateTime.parse(point['pickupTime']).toUtc();
+          point['pickupTime'] = pointPickupTime.toIso8601String();
+        }
+        return point;
+      }).toList();
 
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          imageFile.path,
-          contentType: MediaType.parse(mimeType),
-        ),
+      var url = Uri.parse('${dotenv.env['URL']!}buses/lines');
+      CheckAuth checkAuth = CheckAuth();
+      await checkAuth.init();
+      Map<String, String?> tokens = await checkAuth.getTokens();
+      String? accessToken = tokens['accessToken'];
+
+      Map<String, dynamic> requestBody = {
+        'name': name,
+        'capacity': capacity,
+        'isActive': isActive,
+        'busPoints': formattedPoints,
+        'departureTime': formattedDepartureTime,
+        'arrivalTime': formattedArrivalTime,
+        //'driverID':driverID
+      };
+
+      String requestBodyJson = json.encode(requestBody);
+
+      var response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: requestBodyJson,
       );
-    }
-    request.headers['Authorization'] = 'Bearer $accessToken';
-
-    // Log fields and files
-    print("Request fields: ${request.fields}");
-    print("Request files: ${request.files}");
-
-    var response = await request.send();
-
-    // Log response status and body
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${await response.stream.bytesToString()}');
-
-    if (response.statusCode != 201) {
-      throw Exception('Failed to create bus');
-    }
-  }
+      if (response.statusCode != 201) {
+        throw Exception('Failed to create bus: ${response.reasonPhrase} (${response.statusCode}) - ${response.body}');
+      }
+    } catch (e) {
+      rethrow;
+    }}
 
   Future<void> updateBusStatus(String busId, bool isActive) async {
     var url = Uri.parse('${dotenv.env['URL']!}buses/lines/$busId');

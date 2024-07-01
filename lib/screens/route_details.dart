@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:bus_iti/screens/bus_line.dart';
 import 'package:bus_iti/services/user_auth.dart';
@@ -20,7 +21,7 @@ class RouteDetailsScreen extends StatefulWidget {
   String driverName;
   String driverPhoneNumber;
   final List<BusPoint> busPoints;
-  final bool isActive;
+  bool isActive;
   final String imageUrl;
 
   RouteDetailsScreen({
@@ -56,6 +57,32 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     setState(() {
       _isAdmin = role == 'admin';
     });
+  }
+
+  Future<void> _updateBusStatus(bool isActive) async {
+    try {
+      await _busLinesService.updateBusStatus(widget.busId, isActive);
+      setState(() {
+        widget.isActive = isActive;
+      });
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.scale,
+        title: 'Success',
+        desc: 'Bus status updated successfully',
+        btnOkOnPress: () {},
+      ).show();
+    } catch (e) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.scale,
+        title: 'Error',
+        desc: 'Failed to update bus status: $e',
+        btnOkOnPress: () {},
+      ).show();
+    }
   }
 
   void _updateDriverDetails(String name, String phoneNumber) {
@@ -95,15 +122,15 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     borderRadius: BorderRadius.circular(5),
                     child: widget.imageUrl.isNotEmpty
                         ? Image.network(
-                            widget.imageUrl,
-                            width: 100,
-                            fit: BoxFit.cover,
-                          )
+                      widget.imageUrl,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    )
                         : Image.asset(
-                            'images/default_bus_image.jpg',
-                            width: 100,
-                            fit: BoxFit.cover,
-                          ),
+                      'images/default_bus_image.jpg',
+                      width: 100,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   const SizedBox(width: 14.0),
                   Flexible(
@@ -162,16 +189,16 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 activeColor: Colors.green,
                 onChanged: (value) {
                   if (!widget.isActive) {
-                    /*AwesomeDialog(
-                      context: context,
-                      dialogType: DialogType.error,
-                      animType: AnimType.scale,
-                      title: 'Error',
-                      desc: 'Sorry, this bus is not available at this time.',
-                      btnOkOnPress: () {},
-                      btnOkColor: const Color(0xEADC3333)
+                    AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.error,
+                        animType: AnimType.scale,
+                        title: 'Error',
+                        desc: 'Sorry, this bus is not available at this time.',
+                        btnOkOnPress: () {},
+                        btnOkColor: const Color(0xEADC3333)
                     ).show();
-                    return;*/
+                    return;
                   }
 
                   if (value) {
@@ -189,7 +216,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                 value: widget.isActive,
                 activeColor: Colors.green,
                 onChanged: (value) {
-                  //_updateBusStatus(value);
+                  _updateBusStatus(value);
                 },
               ),
               ElevatedButton(
